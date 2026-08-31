@@ -36,6 +36,23 @@ body{margin:0;background:var(--paper);color:var(--ink);
 code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;
   background:rgba(22,33,44,.07);padding:1px 4px;border-radius:2px}
 
+/* site-level navigation between pages */
+.sitebar{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);margin-bottom:24px}
+.sitemark{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-30);
+  padding-bottom:9px;letter-spacing:.06em;text-transform:uppercase}
+.sitenav{display:flex;gap:3px;margin-left:auto}
+.sitenav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink-60);
+  padding:8px 14px;border-radius:3px 3px 0 0;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-bottom:0;transition:background .14s,color .14s}
+.sitenav a:hover{background:var(--white);color:var(--ink)}
+.sitenav a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.sitenav a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@media(max-width:540px){
+  .sitemark{display:none}
+  .sitenav{margin-left:0;width:100%}
+  .sitenav a{flex:1;text-align:center;padding:8px 6px}
+}
 .mast{border-bottom:2px solid var(--ink);padding-bottom:15px;margin-bottom:20px}
 .mast h1{font-size:clamp(29px,7.5vw,48px);line-height:1.02;letter-spacing:-.025em;font-weight:700;margin:0 0 9px}
 .mast p{margin:0;max-width:58ch;color:var(--ink-60);font-size:15px}
@@ -216,6 +233,14 @@ dl.gloss dd{margin:0;color:var(--ink-60);font-size:13.5px;line-height:1.5}
 </head>
 <body>
 <div class="wrap">
+
+<div class="sitebar">
+  <span class="sitemark">Cisco reference</span>
+  <nav class="sitenav" aria-label="Guides">
+    <a href="index.html" aria-current="page">Cisco IQ</a>
+    <a href="identity-security.html">Identity Security</a>
+  </nav>
+</div>
 
 <header class="mast">
   <h1>Cisco IQ</h1>

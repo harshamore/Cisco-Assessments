@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cisco Identity Security — assess with CII and Astrix, enforce with Duo</title>
+<meta name="description" content="Interactive reference for Cisco identity security: assessment with Identity Intelligence and Astrix, enforcement with Duo, Active Directory Defense and Zero Trust for Agents. Component map, phased build sequence and technical reference.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cisco Identity Security — assess with CII and Astrix, enforce with Duo">
+<meta property="og:description" content="Pick an identity population, see what assesses it and what enforces it, then work through the build in order.">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%2316212C'/%3E%3Ccircle cx='16' cy='11' r='3.4' fill='%230F6FA3'/%3E%3Cpath d='M9 23c0-3.9 3.1-7 7-7s7 3.1 7 7' fill='none' stroke='%230E7A6B' stroke-width='2.2'/%3E%3Ccircle cx='24.5' cy='22.5' r='2.4' fill='%237C2B4C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDF0; --paper-2:#F5F7F9; --white:#fff;
+  --ink:#16212C; --ink-60:#54636F; --ink-30:#9AA7B1; --rule:#C6D0D8;
+  --l-source:#4F6272; --l-assess:#2B55A6; --l-enforce:#0E7A6B;
+  --l-runtime:#6A3D9E; --l-ops:#8A4526; --alert:#A83228;
+  --m-work:#0F6FA3; --m-ad:#A8681B; --m-nhi:#7C2B4C;
+  --v-need:#0E7A6B; --v-build:#4A3B8C;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:26px 16px 90px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:rgba(22,33,44,.07);padding:1px 4px;border-radius:2px}
+
+/* site-level navigation between pages */
+.sitebar{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);margin-bottom:24px}
+.sitemark{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-30);
+  padding-bottom:9px;letter-spacing:.06em;text-transform:uppercase}
+.sitenav{display:flex;gap:3px;margin-left:auto}
+.sitenav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink-60);
+  padding:8px 14px;border-radius:3px 3px 0 0;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-bottom:0;transition:background .14s,color .14s}
+.sitenav a:hover{background:var(--white);color:var(--ink)}
+.sitenav a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.sitenav a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@media(max-width:540px){
+  .sitemark{display:none}
+  .sitenav{margin-left:0;width:100%}
+  .sitenav a{flex:1;text-align:center;padding:8px 6px}
+}
+.mast{border-bottom:2px solid var(--ink);padding-bottom:15px;margin-bottom:20px}
+.mast h1{font-size:clamp(27px,6.8vw,44px);line-height:1.03;letter-spacing:-.025em;font-weight:700;margin:0 0 9px}
+.mast p{margin:0;max-width:58ch;color:var(--ink-60);font-size:15px}
+.stamp{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-60);margin-top:11px}
+
+.tabs{display:flex;margin:20px 0 22px;border:1.5px solid var(--ink);border-radius:2px;overflow:hidden;position:sticky;top:0;z-index:30;background:var(--paper)}
+.tabs button{flex:1;font:inherit;font-size:13px;font-weight:600;padding:11px 5px;background:var(--paper);color:var(--ink);border:0;border-right:1.5px solid var(--ink);cursor:pointer}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button:focus-visible{outline:3px solid var(--l-enforce);outline-offset:-3px}
+
+.step-label{font-size:12px;font-weight:700;color:var(--ink-60);margin:0 0 9px}
+.picker{display:grid;gap:9px;margin-bottom:8px}
+@media(min-width:760px){.picker{grid-template-columns:repeat(3,1fr)}}
+.mode{text-align:left;font:inherit;cursor:pointer;padding:14px 15px;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;border-top:5px solid var(--hue);transition:background .14s,border-color .14s,color .14s}
+.mode:hover{background:var(--white)}
+.mode[aria-pressed="true"]{background:var(--hue);border-color:var(--hue);border-top-color:var(--ink);color:#fff}
+.mode[aria-pressed="true"] .mode-for{color:rgba(255,255,255,.87)}
+.mode:focus-visible{outline:3px solid var(--hue);outline-offset:3px}
+.mode-name{font-weight:700;font-size:16px;letter-spacing:-.015em;display:block}
+.mode-for{font-size:13.5px;color:var(--ink-60);margin-top:3px;display:block;line-height:1.42}
+.mode-facts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.fact{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 6px;border-radius:2px;background:rgba(22,33,44,.08);color:var(--ink-60)}
+.mode[aria-pressed="true"] .fact{background:rgba(255,255,255,.2);color:#fff}
+
+.subtabs{display:flex;margin:22px 0 18px;gap:6px}
+.subtabs button{flex:1;font:inherit;font-size:12.5px;font-weight:600;padding:10px 6px;cursor:pointer;
+  background:var(--paper-2);color:var(--hue);border:1.5px solid var(--hue);border-radius:2px}
+.subtabs button:hover{background:var(--white)}
+.subtabs button[aria-selected="true"]{background:var(--hue);color:#fff}
+.subtabs button:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 4px;font-size:12.5px;color:var(--ink-60);
+  padding:11px 13px;background:var(--paper-2);border-left:3px solid var(--v-need)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+.hub{margin:22px 0 0;padding:14px 17px;background:var(--hue,var(--ink));color:#fff;border-radius:3px;display:inline-block;max-width:100%}
+.hub b{display:block;font-size:17px;letter-spacing:-.01em}
+.hub span{font-size:13px;color:rgba(255,255,255,.86)}
+.map{position:relative;margin-left:16px;padding-left:26px;padding-top:6px}
+.map::before{content:"";position:absolute;left:0;top:0;bottom:34px;width:2px;background:var(--rule)}
+.node{position:relative;margin-bottom:11px}
+.node::before{content:"";position:absolute;left:-26px;top:-6px;width:26px;height:30px;
+  border-left:2px solid var(--rule);border-bottom:2px solid var(--rule);border-bottom-left-radius:12px}
+.node-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;padding:12px 14px}
+.node-head:hover{background:var(--white)}
+.node-head:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+.node-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.node-name{font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.chev{color:var(--ink-30);font-size:12px;transition:transform .18s;flex-shrink:0}
+.node.open .chev,.comp.open .chev,.lstep.open .chev{transform:rotate(180deg)}
+.node-count{font-size:12.5px;color:var(--ink-60);margin-top:3px}
+.node-body{display:none;padding:9px 0 6px 12px;border-left:2px dotted var(--rule);margin-left:8px}
+.node.open .node-body{display:block}
+.item{padding:9px 0;border-bottom:1px solid var(--rule)}
+.item:last-child{border-bottom:0}
+.item-top{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.item b{font-size:14.5px;font-weight:600}
+.item p{margin:4px 0 0;font-size:13.5px;color:var(--ink-60);line-height:1.5}
+.item .why{margin-top:4px;font-size:13px;background:rgba(22,33,44,.045);padding:6px 9px;border-radius:2px;border-left:2px solid var(--hue)}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 7px;border-radius:2px;flex-shrink:0;margin-top:2px;font-weight:500}
+.b-required{background:var(--ink);color:var(--paper)}
+.b-recommended{background:var(--v-need);color:#fff}
+.b-optional{background:transparent;color:var(--ink-60);border:1.5px solid var(--rule)}
+.b-na{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.item.na b,.item.na p{color:var(--ink-30)}
+
+.lld-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.lld-bar h3{font-size:18px;font-weight:700;margin:0;letter-spacing:-.015em;color:var(--v-build)}
+.lld-bar p{margin:2px 0 0;font-size:13.5px;color:var(--ink-60)}
+.expand-all{font:inherit;font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--v-build);border-radius:100px;color:var(--v-build)}
+.expand-all:hover{background:var(--white)}
+.phase{margin:26px 0 12px;display:flex;align-items:center;gap:11px}
+.phase-n{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:2px;background:var(--hue);color:#fff;flex-shrink:0}
+.phase-t{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.phase-line{flex:1;height:1.5px;background:var(--rule)}
+.lstep{position:relative;margin:0 0 8px 13px;padding-left:29px;border-left:2px solid var(--rule)}
+.lstep:last-of-type{border-left-color:transparent}
+.lstep::before{content:attr(data-n);position:absolute;left:-14px;top:11px;width:27px;height:27px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--v-build);color:var(--v-build);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lstep.open::before{background:var(--v-build);color:#fff}
+.step-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;padding:11px 13px;margin-bottom:10px}
+.step-head:hover{background:var(--white)}
+.step-head:focus-visible{outline:3px solid var(--v-build);outline-offset:2px}
+.step-title{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.step-t{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.step-meta{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-60);margin-top:4px;display:block}
+.step-body{display:none;padding:0 0 20px}
+.lstep.open .step-body{display:block}
+.step-body h5{font-size:11px;font-weight:700;margin:0 0 5px;color:var(--hue)}
+.blk{margin-bottom:13px}
+.blk p{margin:0;font-size:13.5px;line-height:1.55}
+.blk ul,.blk ol{margin:0;padding-left:18px}
+.blk li{font-size:13.5px;margin-bottom:5px;line-height:1.5}
+.kv{border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--white)}
+.kv div{display:flex;border-bottom:1px solid var(--rule);font-size:12.5px}
+.kv div:last-child{border-bottom:0}
+.kv dt{flex:0 0 44%;padding:6px 9px;background:var(--paper-2);font-weight:500;margin:0}
+.kv dd{flex:1;padding:6px 9px;margin:0;color:var(--ink-60);font-family:"IBM Plex Mono",monospace;font-size:11.5px;word-break:break-word}
+.gate{background:rgba(22,33,44,.05);border-left:3px solid var(--ink);padding:8px 11px;font-size:13px;line-height:1.5}
+.check{background:rgba(14,122,107,.08);border-left:3px solid var(--l-enforce);padding:8px 11px;font-size:13px;line-height:1.5}
+.warn{background:rgba(168,50,40,.07);border-left:3px solid var(--alert);padding:9px 11px;font-size:13.5px;line-height:1.5;margin-top:12px}
+.warn b{color:var(--alert)}
+
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.filters button{font:inherit;font-size:12.5px;font-weight:500;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--rule);border-radius:100px;color:var(--ink-60)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.deplegend{font-size:12.5px;color:var(--ink-60);padding:10px 13px;background:var(--paper-2);
+  border-left:3px solid var(--ink);margin-bottom:18px;line-height:1.7}
+.comp{margin-bottom:10px;border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;background:var(--paper-2);overflow:hidden}
+.comp-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:transparent;border:0;padding:13px 15px}
+.comp-head:hover{background:var(--white)}
+.comp-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.comp-name{font-weight:700;font-size:16px;letter-spacing:-.015em}
+.cat{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--hue);margin-top:4px;display:block}
+.comp-plain{font-size:14px;color:var(--ink-60);margin:5px 0 8px;line-height:1.5}
+.dep{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.dep em{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-30);margin-right:2px}
+.dep i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 8px;border-radius:2px;border:1.5px solid transparent;white-space:nowrap}
+.dep i.work{background:var(--m-work);color:#fff}
+.dep i.ad{background:var(--m-ad);color:#fff}
+.dep i.nhi{background:var(--m-nhi);color:#fff}
+.dep i.off{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.comp-body{display:none;padding:2px 15px 16px}
+.comp.open .comp-body{display:block}
+.comp.open .comp-head{background:var(--white)}
+.comp-body h4{font-size:11.5px;font-weight:700;color:var(--hue);margin:15px 0 5px}
+.comp-body ul{margin:0;padding-left:17px}
+.comp-body li{font-size:14px;margin-bottom:6px;line-height:1.5}
+.comp-body p.depnote{margin:0;font-size:14px;line-height:1.5}
+
+.ref h3{font-size:17px;font-weight:700;margin:32px 0 9px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);letter-spacing:-.015em}
+.ref h3:first-child{margin-top:0}
+.tbl{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:3px;background:var(--paper-2)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:11.5px;color:var(--ink-60);border-bottom:1.5px solid var(--ink);background:var(--paper)}
+th.h-work{color:#fff;background:var(--m-work)}
+th.h-ad{color:#fff;background:var(--m-ad)}
+th.h-nhi{color:#fff;background:var(--m-nhi)}
+td:first-child{font-weight:500}
+.note{font-size:13px;color:var(--ink-60);margin:9px 0 0;line-height:1.55}
+.qa{border-left:3px solid var(--m-work);padding:2px 0 2px 13px;margin:14px 0}
+.qa b{display:block;font-size:14.5px;margin-bottom:2px}
+.qa span{font-size:14px;color:var(--ink-60);line-height:1.55}
+dl.gloss{margin:0;font-size:14px}
+dl.gloss div{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--rule)}
+dl.gloss div:last-child{border-bottom:0}
+dl.gloss dt{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;flex:0 0 108px}
+dl.gloss dd{margin:0;color:var(--ink-60);font-size:13.5px;line-height:1.5}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{position:relative;padding:0 0 14px 22px;border-left:2px solid var(--rule);margin-left:5px}
+.tl li:last-child{border-left-color:transparent;padding-bottom:0}
+.tl li::before{content:"";position:absolute;left:-6px;top:7px;width:10px;height:10px;border-radius:50%;background:var(--ink)}
+.tl b{display:block;font-size:14.5px}
+.tl span{font-size:13.5px;color:var(--ink-60);line-height:1.5;display:block}
+.tl time{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-30);display:block;margin-bottom:1px}
+
+.foot{margin-top:44px;padding-top:15px;border-top:1.5px solid var(--rule);font-size:12.5px;color:var(--ink-60)}
+.hidden{display:none!important}
+@media(min-width:640px){.wrap{padding:42px 30px 100px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="sitebar">
+  <span class="sitemark">Cisco reference</span>
+  <nav class="sitenav" aria-label="Guides">
+    <a href="index.html">Cisco IQ</a>
+    <a href="identity-security.html" aria-current="page">Identity Security</a>
+  </nav>
+</div>
+
+<header class="mast">
+  <h1>Cisco Identity Security</h1>
+  <p>Assess with Identity Intelligence and Astrix. Enforce with Duo, Active Directory Defense and Zero Trust for Agents. Pick an identity population and see what applies, then work through the build in order.</p>
+  <div class="stamp">Built from Cisco product documentation, Cisco Live EMEA and RSAC 2026 announcements, and the Astrix acquisition · current to August 2026</div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-view="deploy">Assess &amp; enforce</button>
+  <button role="tab" aria-selected="false" data-view="comp">Components</button>
+  <button role="tab" aria-selected="false" data-view="ref">Reference</button>
+</div>
+
+<section id="view-deploy">
+  <p class="step-label">Start here — which identity population are you securing?</p>
+  <div class="picker" id="picker"></div>
+
+  <div class="subtabs" role="tablist">
+    <button role="tab" aria-selected="true" data-sub="map" style="--hue:var(--v-need)">What you need</button>
+    <button role="tab" aria-selected="false" data-sub="lld" style="--hue:var(--v-build)">Build sequence</button>
+  </div>
+
+  <div id="sub-map">
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ink)"></i> Required</span>
+      <span><i class="dot" style="background:var(--v-need)"></i> Recommended</span>
+      <span><i class="dot" style="background:var(--rule)"></i> Optional</span>
+      <span><i class="dot" style="background:transparent;border:1.5px dashed var(--ink-30)"></i> Not used here</span>
+    </div>
+    <div class="hub" id="hub"></div>
+    <div class="map" id="map"></div>
+  </div>
+
+  <div id="sub-lld" class="hidden">
+    <div class="lld-bar">
+      <div><h3 id="lldTitle"></h3><p id="lldSub"></p></div>
+      <button class="expand-all" id="expandAll">Expand all</button>
+    </div>
+    <div id="lld"></div>
+  </div>
+</section>
+
+<section id="view-comp" class="hidden">
+  <p class="step-label">Filter by layer</p>
+  <div class="filters" id="filters"></div>
+  <p class="deplegend">Each component shows which populations it covers:
+    <span class="dep" style="display:inline-flex;vertical-align:-3px"><i class="work">Workforce</i><i class="ad">Active Directory</i><i class="nhi">Non-human</i></span>
+    — filled means it applies, dashed means it doesn't.</p>
+  <div id="compList"></div>
+</section>
+
+<section id="view-ref" class="hidden">
+<div class="ref">
+
+  <h3>The shape of it — assess on the left, enforce on the right</h3>
+  <p class="note">Cisco's identity story splits cleanly into two halves. Identity Intelligence and Astrix tell you what exists and what's wrong with it. Duo, AD Defense and the agentic controls do something about it. Most of the value — and most of the deployment effort — sits in wiring one to the other.</p>
+  <div class="tbl"><table>
+    <tr><th>Risk</th><th>What surfaces it</th><th>What enforces against it</th></tr>
+    <tr><td>Dormant and never-used accounts</td><td>CII IAM Hygiene section; AD Defense never-logged-in check</td><td>Deprovisioning in your IdP; Duo policy to block</td></tr>
+    <tr><td>Weak or missing MFA</td><td>CII MFA Analysis, scored against NIST guidance</td><td>Duo phishing-resistant MFA; risk-based authentication</td></tr>
+    <tr><td>Legacy protocols with no modern control</td><td>AD Defense visibility into on-prem AD</td><td>Duo MFA for Windows Logon and RDP, push-based, no proxy layer</td></tr>
+    <tr><td>Privilege escalation paths in AD</td><td>SpecterOps BloodHound Enterprise attack path intelligence</td><td>Path remediation in AD; Duo controls on the choke points</td></tr>
+    <tr><td>Account takeover in progress</td><td>CII threat checks tied to user trust levels</td><td>XDR response actions — kill session, quarantine user</td></tr>
+    <tr><td>Orphaned API keys, service accounts, OAuth tokens</td><td>Astrix NHI discovery inside CII</td><td>Revocation at source; Duo NHI lifecycle</td></tr>
+    <tr><td>Shadow agents nobody registered</td><td>Astrix discovery across SaaS, IaaS and PaaS</td><td>Duo Directory registration with an accountable human owner</td></tr>
+    <tr><td>Over-broad agent tool access</td><td>AI Defense MCP Catalog and AI BOM</td><td>Duo Agentic Identity per-tool-call authorization</td></tr>
+    <tr><td>Poisoned tools and prompt manipulation</td><td>AI Defense red teaming; Secure Access intent-aware inspection</td><td>AI Defense real-time agentic guardrails</td></tr>
+    <tr><td>Standing privilege that never expires</td><td>CII posture checks on excessive privilege</td><td>Britive just-in-time, just-enough ephemeral credentials</td></tr>
+  </table></div>
+
+  <h3>Population coverage at a glance</h3>
+  <div class="tbl"><table>
+    <tr><th>Capability</th><th class="h-work">Workforce</th><th class="h-ad">Active Directory</th><th class="h-nhi">Non-human</th></tr>
+    <tr><td>Cisco Identity Intelligence</td><td>Core</td><td>Core</td><td>Core</td></tr>
+    <tr><td>Identity Security Assessment dashboard</td><td>Yes</td><td>Yes</td><td>Partial</td></tr>
+    <tr><td>Astrix NHI discovery</td><td>No</td><td>Service accounts</td><td>Core</td></tr>
+    <tr><td>Duo MFA and IAM</td><td>Core</td><td>Core</td><td>Via Duo NHI</td></tr>
+    <tr><td>Active Directory Defense</td><td>Partial</td><td>Core</td><td>Service accounts</td></tr>
+    <tr><td>BloodHound Enterprise</td><td>No</td><td>Core</td><td>No</td></tr>
+    <tr><td>Duo Agentic Identity</td><td>No</td><td>No</td><td>Core</td></tr>
+    <tr><td>Secure Access MCP controls</td><td>No</td><td>No</td><td>Core</td></tr>
+    <tr><td>AI Defense</td><td>No</td><td>No</td><td>Core</td></tr>
+    <tr><td>XDR and Splunk</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+  </table></div>
+
+  <h3>What the ISA dashboard actually contains</h3>
+  <div class="tbl"><table>
+    <tr><th>Section</th><th>What it covers</th><th>Basis</th></tr>
+    <tr><td>IAM Hygiene</td><td>Access management practice, permission auditing, dormant account removal</td><td>Posture checks across connected sources</td></tr>
+    <tr><td>MFA Analysis</td><td>MFA adoption rate and the security strength of each method in use</td><td>Evaluated against NIST guidance</td></tr>
+    <tr><td>Threat Insights &amp; Unusual Activity</td><td>Suspicious activity, failure criteria, affected users, remediation steps</td><td>Associated with user trust levels</td></tr>
+  </table></div>
+  <p class="note">Reached from Dashboards, then the dashboard selector at the top of the page — it defaults to Posture, and ISA Reports is one option in that dropdown. Every counter drills through to the list of impacted users. The dashboard is customisable and exportable for sharing.</p>
+
+  <h3>Zero Trust for Agentic AI — the three pillars</h3>
+  <div class="tbl"><table>
+    <tr><th>Pillar</th><th>What it means</th><th>Delivered by</th></tr>
+    <tr><td>Know every agent</td><td>Discover, register and manage agents, MCP servers and tools; map each agent to an accountable human</td><td>CII discovery, Astrix, Duo Directory</td></tr>
+    <tr><td>Authorize every action</td><td>Control the who, what, when and how of access to systems, tools and data</td><td>Duo Agentic Identity, Secure Access MCP gateway</td></tr>
+    <tr><td>Adapt to risk in real time</td><td>Monitor and enforce safe actions at runtime</td><td>AI Defense guardrails, intent-aware inspection</td></tr>
+  </table></div>
+  <p class="note">Cisco applies this across first-party agents, third-party platforms and widely adopted AI applications. The framing is deliberate: identity, access and behaviour are treated as three dimensions of the same risk rather than three products.</p>
+
+  <h3>How this came together</h3>
+  <ul class="tl">
+    <li><time>2023</time><b>Oort acquisition</b><span>Becomes the engine behind Cisco Identity Intelligence. The product documentation still lives on the Oort domain.</span></li>
+    <li><time>Feb 2026 · Cisco Live EMEA</time><b>Active Directory Defense launches</b><span>Duo adds visibility, insights and protection for on-premises identity. SpecterOps BloodHound Enterprise partnership announced alongside. Same event brings the AI Defense expansion — AI BOM, MCP Catalog, algorithmic red teaming, agentic guardrails — and AI-aware SASE with MCP visibility and intent-aware inspection.</span></li>
+    <li><time>Mar 2026 · RSAC</time><b>Duo Agentic Identity introduced</b><span>Three capabilities: discovery built on CII, identity lifecycle built on Duo Directory, and authorization. Zero Trust Access extended to AI agents, holding them accountable to a human employee.</span></li>
+    <li><time>May 2026</time><b>Cisco announces intent to acquire Astrix Security</b><span>Roughly $400M. Tel Aviv, founded 2021 by Alon Jackson and Idan Gour, both Unit 8200 alumni. Had raised $85M across three rounds.</span></li>
+    <li><time>Jun 2026</time><b>Astrix closes; WideField also acquired</b><span>Astrix capabilities land in CII for visibility, Secure Access and Duo IAM for enforcement, and Splunk for the SOC workflow.</span></li>
+    <li><time>Jun 2026</time><b>Agent Gateway and cross-gateway support</b><span>Duo Agentic Identity extends per-tool-call authorization to gateways it doesn't own — AgentGateway, AWS Bedrock AgentCore, Arcade, Cisco Secure Access, Envoy.</span></li>
+  </ul>
+
+  <h3>Quick answers</h3>
+  <div class="qa"><b>Does the assessment need agents installed?</b><span>No. The ISA uses API-based integrations with your identity providers, chosen specifically so there's no impact on production systems and nothing to deploy on endpoints.</span></div>
+  <div class="qa"><b>How long before the assessment is meaningful?</b><span>Cisco allows up to 14 days after integration for the data to stabilise. Larger identity estates take longer. Don't present findings from day two.</span></div>
+  <div class="qa"><b>Are the CII checks AI-generated?</b><span>No. They're defined checks with published failure criteria, compatible data sources and remediation guidance for each. The AI layer is in the behavioural analytics and prioritisation, not in deciding whether a check fails.</span></div>
+  <div class="qa"><b>Where does Astrix end and CII begin?</b><span>Astrix's discovery engine becomes a capability inside CII rather than a separate console. Astrix's proprietary part was always the discovery engine; the MCP Secret Wrapper it published is the open piece.</span></div>
+  <div class="qa"><b>Do I have to use Cisco's agent gateway?</b><span>No. Duo Agentic Identity provides the authorization layer on top of whichever gateway you already run. That's the deliberate design — it meets you where your agent infrastructure already is.</span></div>
+  <div class="qa"><b>Is this real-time enforcement or just visibility?</b><span>Both now, but the visibility half is more mature. Independent commentary through 2026 consistently noted Cisco's identity offering was stronger on discovery than on real-time enforcement. Astrix, Duo Agentic Identity and the Britive integration are the answer to that; verify maturity per control rather than assuming parity.</span></div>
+  <div class="qa"><b>What does BloodHound add that CII doesn't?</b><span>Attack path intelligence. CII tells you an account is over-privileged. BloodHound shows you the chain from that account to Domain Admin, which is what makes remediation prioritisable.</span></div>
+  <div class="qa"><b>Where does Splunk fit?</b><span>It's the shared data plane. Human identity events, NHI events and agent activity all land in the same place, which is what lets an analyst run one investigation rather than two.</span></div>
+
+  <h3>Glossary</h3>
+  <dl class="gloss">
+    <div><dt>CII</dt><dd>Cisco Identity Intelligence — aggregates identity data across sources and runs posture and threat checks against it</dd></div>
+    <div><dt>ISA</dt><dd>Identity Security Assessment — the pre-built CII dashboard that consolidates findings into three focus areas</dd></div>
+    <div><dt>ITDR</dt><dd>Identity Threat Detection and Response — detecting attacks against the identity layer itself</dd></div>
+    <div><dt>ISPM</dt><dd>Identity Security Posture Management — the configuration and hygiene half of the same discipline</dd></div>
+    <div><dt>NHI</dt><dd>Non-Human Identity — API keys, service accounts, OAuth tokens, workloads and AI agents</dd></div>
+    <div><dt>Shadow agent</dt><dd>An AI agent provisioned without the security team's involvement. The reason discovery has to come before governance</dd></div>
+    <div><dt>MCP</dt><dd>Model Context Protocol — how agents reach tools and data. The protocol Cisco inspects and enforces policy on</dd></div>
+    <div><dt>AI BOM</dt><dd>AI Bill of Materials — inventory of AI software assets including MCP servers and third-party dependencies</dd></div>
+    <div><dt>Kerberoasting</dt><dd>Requesting service tickets for accounts with SPNs, then cracking them offline. A classic AD service-account attack</dd></div>
+    <div><dt>Pass-the-Hash</dt><dd>Reusing a captured password hash to authenticate without ever knowing the password</dd></div>
+    <div><dt>BloodHound</dt><dd>Graph-based tool that maps privilege escalation paths through AD. Enterprise edition is the SpecterOps commercial product</dd></div>
+    <div><dt>User trust level</dt><dd>CII's per-user scoring that threat checks attach to, so findings can be prioritised by who they affect</dd></div>
+    <div><dt>JIT / JEA</dt><dd>Just-in-time and just-enough access — credentials issued for a task and revoked when it ends</dd></div>
+    <div><dt>Duo Passport</dt><dd>Carries an established Duo session across applications so users aren't re-prompted repeatedly</dd></div>
+    <div><dt>Per-tool-call authz</dt><dd>Authorising each individual tool invocation an agent makes, rather than granting access to a whole MCP server</dd></div>
+  </dl>
+
+  <h3>Where to be careful</h3>
+  <ul style="font-size:14px;padding-left:19px">
+    <li><b>Assessment is not enforcement.</b> A clean ISA report tells you what to fix. Nothing changes until someone deprovisions the accounts, tightens the MFA policy, or revokes the tokens. Budget for the remediation, not just the assessment.</li>
+    <li><b>Fourteen days is a real constraint.</b> If a customer expects findings in a workshop next week, integrate now. This is the single most common scheduling mistake on these engagements.</li>
+    <li><b>Astrix integration is recent.</b> The acquisition closed June 2026. Verify which capabilities are natively inside CII today versus still delivered through the Astrix console, because that gap moves every quarter.</li>
+    <li><b>Agent controls are moving fast.</b> The gateway list, the supported MCP surface and the policy model have all changed twice in 2026. Anything you put in a design document has a short shelf life.</li>
+    <li><b>Duo AD Defense is not a full PAM replacement.</b> It closes the legacy MFA gap and adds AD visibility. Privileged session management, credential vaulting and rotation are still separate problems.</li>
+    <li><b>Check what the ISA covers for NHIs.</b> The three ISA sections were built around human identity. NHI and agent findings surface in CII, but not necessarily in the same pre-built dashboard.</li>
+  </ul>
+
+  <h3>Source material</h3>
+  <ul style="font-size:13.5px;padding-left:19px">
+    <li>Cisco Identity Intelligence knowledge base (docs.oort.io) — Identity Security Assessment, Cisco Identity Checks, integrations, user trust levels</li>
+    <li>Duo documentation — Duo Identity Security with Cisco Identity Intelligence; Active Directory Defense solution page</li>
+    <li>Cisco newsroom — "Cisco Redefines Security for the Agentic Era", 10 Feb 2026; "Cisco Reimagines Security for the Agentic Workforce", Mar 2026</li>
+    <li>Cisco blogs — Astrix acquisition announcement; "Extending Zero Trust Across the Agentic AI Workflow"; "Security for the Agentic Era: Cisco AI Defense Breaks New Ground"; SASE for the AI Era</li>
+    <li>Duo blog — Active Directory Defense launch; "Duo Brings Identity and Authorization Across AI Agent Gateways"</li>
+    <li>Cisco solution collateral — Zero Trust for Agentic AI white paper and solution brief</li>
+    <li>Cisco Live BRKSEC-2162, "Identity Intelligence Demystified"</li>
+    <li>Cisco Talos 2025 Year in Review; Britive integration documentation</li>
+  </ul>
+
+</div>
+</section>
+
+<p class="foot">Reflects Cisco material published to late August 2026. This portfolio is changing faster than any other part of Cisco security — verify capability maturity and gateway support against current documentation before committing anything to a design.</p>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+var R="required",RC="recommended",O="optional",NA="na";
+
+var MODES=[
+ {id:"work",hue:"var(--m-work)",name:"Workforce identity",
+  forWho:"Human users across your cloud IdPs and SaaS. The classic ITDR and posture problem.",
+  facts:["CII + ISA","Duo enforcement","API-only, no agents"],
+  hub:"Securing: workforce identity",
+  sub:"14 steps across 5 phases. Integration is fast; the 14-day data stabilisation window sets the real timeline."},
+ {id:"ad",hue:"var(--m-ad)",name:"On-prem Active Directory",
+  forWho:"Legacy identity where modern controls are hard to apply. Almost half of identity attacks target it.",
+  facts:["AD Defense","BloodHound","legacy protocols"],
+  hub:"Securing: on-premises Active Directory",
+  sub:"13 steps across 5 phases. The attack-path work is where the value is, and where the effort goes."},
+ {id:"nhi",hue:"var(--m-nhi)",name:"Non-human &amp; agentic",
+  forWho:"API keys, service accounts, OAuth tokens and AI agents. The fastest-moving and least mature of the three.",
+  facts:["Astrix discovery","per-tool-call authz","MCP inspection"],
+  hub:"Securing: non-human and agentic identity",
+  sub:"18 steps across 6 phases. Discovery is quick; authorization and runtime enforcement are where the design decisions live."}
+];
+
+var BRANCHES=[
+{id:"src",title:"Identity sources and discovery",hue:"var(--l-source)",items:[
+ {n:"Cloud identity providers",s:{work:R,ad:RC,nhi:RC},
+  p:"Entra ID, Okta and the SaaS estate — GitHub, Google, Salesforce, Workday and others.",
+  w:"Connected by API. Cisco chose this deliberately so there is no production impact and nothing to deploy on endpoints. Each check lists which sources it is compatible with, so coverage varies by connector."},
+ {n:"Duo as a source",s:{work:R,ad:RC,nhi:O},
+  p:"Duo's own authentication telemetry feeds CII directly.",
+  w:"Provisioned from Duo under Monitoring, then Cisco Identity Intelligence, then Provision. Ingestion and analysis begin automatically once provisioned."},
+ {n:"On-prem Active Directory",s:{work:O,ad:R,nhi:O},
+  p:"Brings admin, guest and service-account identities from on-prem AD into the CII dashboard.",
+  w:"This is the AD Defense visibility half. Without it, your assessment covers the cloud and misses where roughly half of identity attacks actually land."},
+ {n:"Astrix NHI discovery",s:{work:NA,ad:O,nhi:R},
+  p:"Maps API keys, service accounts, OAuth tokens and AI agents across SaaS, IaaS and PaaS.",
+  w:"Includes shadow agents provisioned without the security team's involvement. This is the only component that finds things nobody registered, which is the whole point."},
+ {n:"AI Defense MCP Catalog",s:{work:NA,ad:NA,nhi:RC},
+  p:"Discovers and inventories MCP servers and registries across public and private platforms.",
+  w:"Pairs with AI BOM for the software supply chain. Together they answer what AI assets exist and where they came from — the questions that precede any authorization decision."},
+ {n:"Data stabilisation window",s:{work:R,ad:R,nhi:R},
+  p:"Up to 14 days after integration for CII to collect and analyse historical data.",
+  w:"Not optional and not skippable. Plan the assessment readout at least two weeks after the connectors go in, or you present a half-formed picture."}
+]},
+{id:"assess",title:"Assessment and analysis",hue:"var(--l-assess)",items:[
+ {n:"Cisco Identity Intelligence",s:{work:R,ad:R,nhi:R},
+  p:"The analysis engine. Aggregates identity data across sources and runs checks against it.",
+  w:"Two categories of insight: identity threat detection and identity posture management. Everything else in this stack either feeds it or acts on its output."},
+ {n:"ISA Reports dashboard",s:{work:R,ad:R,nhi:O},
+  p:"Pre-built dashboard consolidating findings into IAM Hygiene, MFA Analysis and Threat Insights.",
+  w:"Built around human identity. NHI findings appear in CII but not necessarily in this dashboard — check before promising an agent-focused ISA readout."},
+ {n:"Identity checks",s:{work:R,ad:R,nhi:RC},
+  p:"Defined checks, each with failure criteria, compatible data sources, remediation guidance and settings.",
+  w:"Customisable per check. Tune them before the first readout or you will spend the workshop explaining false positives instead of discussing real risk."},
+ {n:"User trust levels",s:{work:R,ad:RC,nhi:O},
+  p:"Per-user scoring that threat findings attach to.",
+  w:"This is what makes the threat section prioritisable rather than a flat list. A failed check against a high-trust-level admin is not the same finding as against a dormant contractor."},
+ {n:"BloodHound Enterprise",s:{work:NA,ad:RC,nhi:NA},
+  p:"SpecterOps attack path intelligence, partnered into the AD Defense story.",
+  w:"CII tells you an account is over-privileged. BloodHound shows the chain from that account to Domain Admin. Remediation prioritisation without it is guesswork."},
+ {n:"AI Defense red teaming",s:{work:NA,ad:NA,nhi:O},
+  p:"Adaptive single and multi-turn testing of models and agents, across multiple languages.",
+  w:"An assessment of the agent's behaviour rather than its identity. Different question, same engagement — worth scoping together."}
+]},
+{id:"enforce",title:"Enforcement controls",hue:"var(--l-enforce)",items:[
+ {n:"Duo MFA",s:{work:R,ad:R,nhi:NA},
+  p:"Phishing-resistant methods, adaptive device trust, proximity verification.",
+  w:"The ISA's MFA Analysis section scores your methods against NIST guidance. That score is the input; this is the control that moves it."},
+ {n:"Risk-based authentication",s:{work:RC,ad:O,nhi:NA},
+  p:"Steps authentication up or down based on signal rather than applying one policy to everyone.",
+  w:"The mechanism that turns CII's behavioural findings into something that acts at login rather than sitting in a report."},
+ {n:"Duo Directory and SSO",s:{work:RC,ad:O,nhi:R},
+  p:"Identity store and single sign-on across applications.",
+  w:"Also the registry for agent identities. Duo Agentic Identity's lifecycle capability is built on Duo Directory, which is why it matters even in an agent-only project."},
+ {n:"Duo Passport",s:{work:O,ad:O,nhi:NA},
+  p:"Carries an established session across applications so users are not re-prompted repeatedly.",
+  w:"A user-experience control that protects the security outcome. Over-prompting is how MFA fatigue starts, and fatigue is what attackers exploit."},
+ {n:"AD Defense MFA",s:{work:O,ad:R,nhi:NA},
+  p:"MFA for Windows Logon, RDP and older protocols that resist modern controls.",
+  w:"Push-based, without the proxy and orchestration layers these deployments traditionally needed. Removing that middle tier is most of the operational argument."},
+ {n:"Duo Agentic Identity",s:{work:NA,ad:NA,nhi:R},
+  p:"Per-tool-call authorization, identity-correlated audit and unified policy for agents.",
+  w:"Governs which tools an agent may invoke, not merely which MCP servers it can reach. That distinction is the entire difference between coarse and useful agent authorization."},
+ {n:"Secure Access MCP controls",s:{work:NA,ad:NA,nhi:RC},
+  p:"In-path discovery, logging and policy control over agent-to-tool connectivity.",
+  w:"The inline enforcement point. Duo decides whether the call is allowed; Secure Access is where that decision is applied to traffic."},
+ {n:"Britive JIT access",s:{work:O,ad:O,nhi:O},
+  p:"Just-in-time and just-enough ephemeral credentials, revoked when the task ends.",
+  w:"Answers what an identity can do after login, which is where the risk concentrates once agents can act continuously. Consumes signals from Duo and CII."}
+]},
+{id:"runtime",title:"Runtime and behaviour",hue:"var(--l-runtime)",items:[
+ {n:"Intent-aware inspection",s:{work:NA,ad:NA,nhi:RC},
+  p:"Evaluates the intent behind agentic messages and tool requests, not just their syntax.",
+  w:"Agentic traffic is semantically complex in ways conventional tooling cannot parse. This is Cisco's answer to inspecting the why rather than the what."},
+ {n:"AI Defense agentic guardrails",s:{work:NA,ad:NA,nhi:RC},
+  p:"Continuously monitors agent interactions for manipulation or unsafe behaviour.",
+  w:"Catches poisoned tools and prompts engineered to trigger unauthorized tool use. Complements authorization rather than replacing it — an allowed call can still be a manipulated one."},
+ {n:"Session theft protection",s:{work:RC,ad:O,nhi:NA},
+  p:"Detects and responds to stolen session tokens.",
+  w:"Closes the gap that strong MFA alone leaves open. If the attacker steals the session after authentication, the MFA strength never mattered."},
+ {n:"XDR response actions",s:{work:RC,ad:RC,nhi:O},
+  p:"Automated response driven by identity signal — killing sessions, quarantining users.",
+  w:"This is the shortest path from a CII finding to something actually happening. Wire it early or your assessment stays a report."}
+]},
+{id:"ops",title:"Operations, telemetry and governance",hue:"var(--l-ops)",items:[
+ {n:"XDR integration",s:{work:RC,ad:RC,nhi:O},
+  p:"Connects CII to XDR through Security Cloud Control. Populates User Insights and adds account context to incidents.",
+  w:"A supplied workflow ingests failed CII checks as custom security events, normalised as detection findings in the XDR data warehouse."},
+ {n:"Splunk",s:{work:RC,ad:RC,nhi:RC},
+  p:"The shared data plane for human identity, non-human identity and agent activity.",
+  w:"The reason to land all three in one place is investigation economics — one timeline instead of two consoles and a correlation problem."},
+ {n:"Webhooks and notifications",s:{work:O,ad:O,nhi:O},
+  p:"Operational alerts and failed checks pushed to your own destinations.",
+  w:"A standard interface for integrating CII with systems that have no native connector. The pragmatic escape hatch."},
+ {n:"GraphQL API",s:{work:O,ad:O,nhi:O},
+  p:"Public API with client credentials, for querying CII programmatically.",
+  w:"How you get findings into a CMDB, a ticketing system or your own reporting rather than living in the dashboard."},
+ {n:"Accountable human owner",s:{work:NA,ad:O,nhi:R},
+  p:"Every agent and non-human identity mapped to a named person.",
+  w:"Not a technical control but the governance spine of the whole agentic model. Without it there is no audit trail and nobody to escalate to when an agent misbehaves."},
+ {n:"Agent lifecycle",s:{work:NA,ad:O,nhi:R},
+  p:"Onboarding, enablement and offboarding of agents with human oversight.",
+  w:"Offboarding is the part everyone skips. Orphaned agent credentials are exactly the class of NHI risk that Astrix exists to find."}
+]}];
+
+var LLD={
+work:[
+{p:"Phase 0",t:"Prerequisites and scoping",hue:"var(--l-source)",steps:[
+ {t:"Confirm entitlement and tenant access",meta:"Cisco licensing · hours to days",
+  where:"Outside the product. CII is available with Duo tiers and also as a standalone trial.",
+  needs:["Duo administrator access, or a CII tenant","Agreement on who holds admin"],
+  actions:["Confirm the CII entitlement you are working under — bundled with Duo, or a 30-day trial for a proof of value.","Identify the Duo administrators who will need CII access."],
+  kv:[["Trial length","30 days"],["Access path","Duo SSO or external IdP"]],
+  verify:"You can reach the CII dashboard and see the Posture view.",
+  gates:"Everything downstream."},
+ {t:"Inventory your identity sources before connecting anything",meta:"Discovery workshop · half a day",
+  where:"A whiteboard exercise. Doing it first prevents a partial assessment that has to be redone.",
+  needs:["List of IdPs, SaaS apps and directories in scope","Owner for each"],
+  actions:["List every identity source: Entra ID, Okta, Duo, and the SaaS estate — GitHub, Google, Salesforce, Workday and anything else holding identities.","For each, identify who can authorise an API integration. This is usually the long pole.","Check which CII checks are compatible with each source — coverage is not uniform, and a source you skip is a blind spot in the final report."],
+  kv:[["Integration method","API-based"],["Agents required","none"],["Production impact","none by design"]],
+  verify:"A source list with a named owner and an authorisation path for each.",
+  gates:"Connector configuration.",
+  warn:"Every source you leave out becomes a gap in the ISA that someone will find later. It is much cheaper to add it now than to re-run the assessment."}
+]},
+{p:"Phase 1",t:"Connect and wait",hue:"var(--l-source)",steps:[
+ {t:"Provision Duo as a source",meta:"Duo Admin Panel · 15 min",
+  where:"In Duo, not in CII. This is the simplest connector and a good first one.",
+  needs:["Duo admin access","A Duo group for CII dashboard users"],
+  actions:["In Duo go to <b>Monitoring → Cisco Identity Intelligence → Provision</b>.","Review the page, then click Connect to Cisco Identity Intelligence.","Confirm each Duo admin who needs CII also exists as a Duo end user in the group granted access to the CII SSO application.","If you use an external identity source for SSO, make sure the CII dashboard user exists there too for primary authentication."],
+  kv:[["Path","Monitoring → CII → Provision"],["Ingestion","begins automatically"],["Access requirement","member of a permitted group"]],
+  verify:"Duo data starts appearing in CII. Admins in permitted groups can sign in through Duo SSO.",
+  gates:"Duo-sourced checks.",
+  warn:"An admin who is not a member of a permitted group gets an access error from Duo SSO rather than a helpful message. Sort group membership before handing out the URL."},
+ {t:"Connect the cloud identity providers",meta:"CII integrations · 1–2 hours plus approvals",
+  where:"CII's integrations page, authenticating against each source.",
+  needs:["Admin authorisation on each source","The source list from step 2"],
+  actions:["Add Entra ID, Okta and each SaaS source in turn.","Work through the sources with the widest user coverage first, so partial data is still representative.","Record which checks each connector enables, so you know what the report will and won't contain."],
+  kv:[["Sources","Entra ID · Okta · Duo · GitHub · Google · Salesforce · Workday and others"],["Method","API integration"],["Deployment","no agent"]],
+  verify:"Each source shows as connected and user counts look plausible against your own numbers.",
+  gates:"The assessment itself."},
+ {t:"Wait out the stabilisation window",meta:"Up to 14 days · nothing to do",
+  where:"Nowhere. This step is calendar time, and it is the reason these engagements are scheduled the way they are.",
+  needs:["Patience, and a readout date set at least two weeks out"],
+  actions:["Allow up to 14 days after integration for CII to collect and analyse historical data.","Larger identity estates take longer.","Use the time to agree the remediation process — who fixes a dormant account, who approves an MFA policy change."],
+  kv:[["Stabilisation","up to 14 days"],["Driver","historical data collection"],["Scales with","size of identity environment"]],
+  verify:"Counters stop moving materially day over day.",
+  gates:"Any credible readout.",
+  warn:"This is the single most common scheduling mistake. If a customer wants findings next week, the connectors needed to go in last week."}
+]},
+{p:"Phase 2",t:"Run the assessment",hue:"var(--l-assess)",steps:[
+ {t:"Open the ISA Reports dashboard",meta:"Dashboards → selector → ISA Reports · minutes",
+  where:"CII's dashboard area. It is not the default view.",
+  needs:["Stabilised data"],
+  actions:["Go to <b>Dashboards</b> from the left menu.","Click the dashboard header at the top of the page — it defaults to <b>Posture</b> — to open the selector.","Choose <b>ISA Reports</b>."],
+  kv:[["Default dashboard","Posture"],["Aggregates","all connected sources in the tenant"],["Sections","IAM Hygiene · MFA Analysis · Threat Insights"]],
+  verify:"Three sections populate with counters that drill through to affected users.",
+  gates:"Triage."},
+ {t:"Tune the checks before you present anything",meta:"CII checks · half a day",
+  where:"The checks configuration, per check.",
+  needs:["Someone who knows the environment well enough to spot a false positive"],
+  actions:["Open each failing check and read its criteria, compatible sources and remediation guidance.","Adjust customisable settings where a check does not fit the environment — a service account flagged as a dormant user, for example.","Document what you changed and why. A tuned check you cannot explain is worse than an untuned one."],
+  kv:[["Categories","threat detection · posture management"],["Per check","criteria, sources, remediation, settings"]],
+  verify:"The remaining failures are ones you would defend in a room.",
+  gates:"A credible readout.",
+  warn:"Untuned checks turn the readout into an argument about false positives. Spend the half-day."},
+ {t:"Triage IAM hygiene",meta:"ISA section 1 · 2–4 hours",
+  where:"The first ISA section, and usually the fastest wins.",
+  needs:["A deprovisioning process that actually works"],
+  actions:["Work the dormant and never-used accounts first — highest count, lowest risk to remove, most visible result.","Review permission concentration and over-privileged accounts.","Drill each counter into the user list and export it for the owning team."],
+  kv:[["Focus","access management, permission audit, dormant accounts"],["Drill-through","counters → impacted users"],["Export","dashboard export for sharing"]],
+  verify:"An owned, dated remediation list rather than a screenshot.",
+  gates:"Nothing technically. But this section is where the assessment earns credibility."},
+ {t:"Triage MFA analysis",meta:"ISA section 2 · 1–2 hours",
+  where:"The second ISA section. Adoption rate and method strength, both.",
+  needs:["Your current MFA policy, written down"],
+  actions:["Read the adoption figure and the method-strength evaluation, which is scored against NIST guidance.","Separate the two problems: users with no MFA, and users with weak MFA. They have different fixes and different pushback.","Identify which applications and populations drive the weak-method count."],
+  kv:[["Basis","NIST guidance on authenticator strength"],["Two findings","adoption gap · method strength gap"]],
+  verify:"A prioritised list of populations to move, and to what method.",
+  gates:"The Duo enforcement work in Phase 3."},
+ {t:"Triage threat insights",meta:"ISA section 3 · 2–4 hours",
+  where:"The third section, tied to user trust levels.",
+  needs:["An incident process for anything genuinely active"],
+  actions:["Review suspicious activity findings in the context of the affected user's trust level — the same check against an admin and a dormant contractor are different findings.","Explore failure criteria and affected users for each check.","Escalate anything that looks like an active compromise immediately rather than waiting for the report."],
+  kv:[["Tied to","user trust levels"],["Per check","criteria, remediation, affected users, context"]],
+  verify:"Active threats escalated, the rest prioritised.",
+  gates:"Readout."}
+]},
+{p:"Phase 3",t:"Enforce with Duo",hue:"var(--l-enforce)",steps:[
+ {t:"Close the MFA gaps",meta:"Duo policy · days to weeks with change control",
+  where:"Duo policy, applied against the populations the ISA identified.",
+  needs:["The prioritised list from step 8","Change approval and comms"],
+  actions:["Move the no-MFA population onto MFA first.","Move weak methods toward phishing-resistant options for the highest-risk populations.","Layer adaptive device trust where the device posture signal is available."],
+  kv:[["Target","phishing-resistant methods"],["Layer","adaptive device trust"],["Measure against","the ISA MFA Analysis baseline"]],
+  verify:"Re-check the ISA MFA Analysis section. The numbers should move, and that movement is your evidence of value.",
+  gates:"Nothing — but this is the first place the assessment turns into an outcome."},
+ {t:"Turn on risk-based authentication",meta:"Duo policy · 1–2 days",
+  where:"Duo's policy engine, consuming behavioural signal.",
+  needs:["MFA coverage in place first"],
+  actions:["Enable risk-based authentication so step-up is driven by signal rather than a blanket policy.","Consider Duo Passport to stop repeated prompting across applications — over-prompting causes fatigue, and fatigue is what attackers exploit.","Enable session theft protection so a stolen session does not bypass everything you just built."],
+  kv:[["Steps up on","risk signal"],["Passport","carries session across apps"],["Session theft","detection and response"]],
+  verify:"Step-up triggers on a deliberately anomalous test sign-in.",
+  gates:"Nothing further in this track."},
+ {t:"Wire findings to automated response",meta:"XDR via Security Cloud Control · half a day",
+  where:"The join between CII and XDR. This is what makes findings act.",
+  needs:["Cisco XDR","Security Cloud Control"],
+  actions:["Connect CII to XDR through Security Cloud Control.","Confirm CII users and identities appear in XDR User Insights and populate account context into incidents.","Install the supplied workflow that ingests failed CII checks as custom security events, normalised as detection findings in the XDR data warehouse.","Configure response actions — killing a session, quarantining a user."],
+  kv:[["Via","Cisco Security Cloud Control"],["Surfaces in","XDR User Insights"],["Check ingestion","custom security events → detection findings"],["Response","kill session · quarantine user"]],
+  verify:"A test failed check appears in XDR as a detection finding.",
+  gates:"Automated response. Without this the assessment stays a document."}
+]},
+{p:"Phase 4",t:"Operate",hue:"var(--l-ops)",steps:[
+ {t:"Land everything in Splunk",meta:"Telemetry · half a day",
+  where:"Your SIEM. The point is one investigation surface, not two.",
+  needs:["Splunk or another SIEM"],
+  actions:["Forward identity events and findings so human, non-human and agent activity share one data plane.","Use webhook destinations for anything without a native connector.","Use the GraphQL API with client credentials if you need findings in a CMDB or ticketing system."],
+  kv:[["API","public GraphQL, client credentials"],["Alerts","webhook destinations"],["Goal","one timeline, not two consoles"]],
+  verify:"An analyst can trace an identity event end to end without switching tools.",
+  gates:"Nothing — this is the operating end state."},
+ {t:"Set the re-measurement rhythm",meta:"Ongoing · monthly or quarterly",
+  where:"Process, not product.",
+  needs:["A named owner","The original ISA export as a baseline"],
+  actions:["Keep the first ISA export as the baseline. The dashboard is explicitly designed as a reference point to compare progress against.","Re-run the comparison monthly or quarterly and report the delta, not the absolute.","Revisit check tuning as the environment changes."],
+  kv:[["Baseline","first ISA export"],["Cadence","monthly or quarterly"],["Report","the delta"]],
+  verify:"A trend line rather than a series of unrelated snapshots.",
+  gates:"Nothing — end state."}
+]}],
+
+ad:[
+{p:"Phase 0",t:"Prerequisites",hue:"var(--l-source)",steps:[
+ {t:"Confirm entitlement and AD scope",meta:"Licensing and scoping · days",
+  where:"Outside the product.",
+  needs:["Duo entitlement covering AD Defense","A list of domains and forests in scope"],
+  actions:["Confirm which Duo tier covers Active Directory Defense.","Scope the domains and forests. Multi-forest environments need this decided up front, not discovered mid-deployment.","Identify the AD owners — this is often a different team from the one that owns cloud identity, and that boundary causes most of the delay."],
+  kv:[["Attack context","nearly half of identity attacks target AD, per Talos"],["Common techniques","Kerberoasting · Pass-the-Hash"]],
+  verify:"Scope agreed and AD owners engaged.",
+  gates:"Everything downstream.",
+  warn:"The AD team and the cloud identity team are usually separate, with separate change processes. Get both in the room at the start."},
+ {t:"Establish the existing Duo footprint",meta:"Discovery · half a day",
+  where:"Your current Duo deployment.",
+  needs:["Inventory of existing Duo integrations"],
+  actions:["Check whether Windows Logon and RDP integrations are already in place — many organisations have these and forget.","Identify legacy protocols and applications where MFA has been hard to apply. This is the gap AD Defense is built for.","Note any existing proxy or orchestration layers, because removing them is part of the operational case."],
+  kv:[["Existing integrations","Windows Logon · RDP"],["Target gap","legacy protocols and applications"]],
+  verify:"A clear before-picture of coverage and workarounds.",
+  gates:"The enforcement design in Phase 3."}
+]},
+{p:"Phase 1",t:"Get visibility",hue:"var(--l-source)",steps:[
+ {t:"Connect Active Directory to CII",meta:"CII integration · hours",
+  where:"The visibility half of AD Defense. Your on-prem identities appear in the CII dashboard alongside cloud ones.",
+  needs:["AD read access","Duo and CII in place"],
+  actions:["Connect AD so admin, guest and non-human identities including service accounts surface in CII.","Confirm the identity counts against your own AD figures. A large discrepancy usually means scope, not a product fault."],
+  kv:[["Surfaces","admin · guest · service accounts"],["Dashboard","Cisco Identity Intelligence"]],
+  verify:"On-prem identities appear in CII and counts reconcile.",
+  gates:"AD posture checks."},
+ {t:"Wait out the stabilisation window",meta:"Up to 14 days",
+  where:"Calendar time again.",
+  needs:["A readout date set accordingly"],
+  actions:["Allow up to 14 days for historical data to stabilise.","Use the time to agree who owns AD remediation and what their change window looks like."],
+  kv:[["Stabilisation","up to 14 days"]],
+  verify:"Counters stabilise.",
+  gates:"Any credible AD readout."},
+ {t:"Add BloodHound Enterprise",meta:"SpecterOps · varies by procurement",
+  where:"Alongside CII. Separate product, partnered into the AD Defense story.",
+  needs:["A BloodHound Enterprise entitlement"],
+  actions:["Deploy BloodHound Enterprise against the in-scope domains.","Confirm attack path data is flowing and can be correlated with CII findings.","Agree how the two outputs will be presented together — they answer different questions and a combined readout needs a structure."],
+  kv:[["Vendor","SpecterOps"],["Adds","attack path intelligence"],["Scale","known and novel paths"]],
+  verify:"Attack paths render for the in-scope domains.",
+  gates:"Prioritised remediation. Without paths you are guessing which over-privileged account matters.",
+  warn:"This is a separate commercial arrangement. Do not assume it is included in the Duo entitlement."}
+]},
+{p:"Phase 2",t:"Assess",hue:"var(--l-assess)",steps:[
+ {t:"Run the AD posture checks",meta:"CII checks · 2–4 hours",
+  where:"CII, using the proprietary intelligence checks that came with AD Defense.",
+  needs:["Stabilised data"],
+  actions:["Work the never-logged-in accounts first. Cisco cites an early customer clearing around 150 stale AD accounts off this single check — it is the fastest visible win in the whole engagement.","Review over-privileged, dormant and risky accounts across admin, guest and service-account populations.","Identify service accounts with weak configurations, which are the Kerberoasting surface."],
+  kv:[["Highest-yield check","never logged in"],["Populations","admin · guest · service accounts"],["Attack surface","service account configuration"]],
+  verify:"A dated, owned remediation list per population.",
+  gates:"Nothing technically, but this is where the engagement proves itself."},
+ {t:"Overlay attack paths",meta:"BloodHound + CII · half a day",
+  where:"The join between the two datasets. This is the analytical core of an AD assessment.",
+  needs:["Both datasets populated"],
+  actions:["Map the CII findings onto BloodHound paths — which over-privileged accounts sit on a path to Domain Admin.","Prioritise by path, not by count. Ten over-privileged accounts off any path matter less than one on a short path.","Identify choke points where a single change removes many paths."],
+  kv:[["Prioritise by","path to high-value target"],["Look for","choke points, not counts"]],
+  verify:"A remediation list ordered by path impact rather than by finding count.",
+  gates:"The enforcement design.",
+  warn:"Presenting raw counts without path context is the most common way an AD assessment fails to land. The count is not the risk."}
+]},
+{p:"Phase 3",t:"Enforce",hue:"var(--l-enforce)",steps:[
+ {t:"Extend MFA to Windows Logon and RDP",meta:"Duo · days with change control",
+  where:"The endpoints and jump hosts where credential theft actually plays out.",
+  needs:["Duo deployment","Change window and rollback plan"],
+  actions:["Roll out MFA for Windows Logon and RDP if not already in place.","Pilot on a controlled group before broad rollout — logon MFA is high-visibility and a bad rollout burns credibility.","Confirm break-glass and offline access procedures before you enable enforcement anywhere."],
+  kv:[["Coverage","Windows Logon · RDP"],["Method","push-based"],["Prerequisite","break-glass procedure"]],
+  verify:"Pilot users authenticate cleanly; break-glass tested.",
+  gates:"Broad enforcement.",
+  warn:"Test break-glass before enforcement, not after. Logon MFA is the control most likely to lock out the people who would fix it."},
+ {t:"Cover the legacy protocols",meta:"Duo AD Defense · days",
+  where:"The applications and protocols that resisted modern controls until now.",
+  needs:["The legacy inventory from step 2"],
+  actions:["Apply Duo coverage to the legacy applications identified earlier.","Remove the proxy and orchestration layers that were previously required — simpler push-based MFA with familiar admin controls is the point of this.","Keep the consistent Duo mobile experience across old and new, so users are not learning two flows."],
+  kv:[["Removes","proxies and orchestration layers"],["Delivers","push-based MFA, familiar admin controls"]],
+  verify:"Legacy applications authenticate through Duo and the old middle tier is decommissioned.",
+  gates:"Nothing further in this track."},
+ {t:"Remediate the attack paths",meta:"AD change · weeks",
+  where:"Active Directory itself. Not a Cisco product action.",
+  needs:["The path-ordered list from step 7","AD change approval"],
+  actions:["Work choke points first.","Remove privilege rather than adding compensating controls where you can.","Re-run BloodHound after each batch to confirm paths actually closed rather than moved."],
+  kv:[["Order","choke points first"],["Verify","re-run after each batch"]],
+  verify:"Path count to high-value targets drops measurably.",
+  gates:"Handover.",
+  warn:"Removing privilege breaks things. Sequence with the application owners, and expect this phase to take longer than every other phase combined."}
+]},
+{p:"Phase 4",t:"Prove and operate",hue:"var(--l-ops)",steps:[
+ {t:"Produce the compliance evidence",meta:"Reporting · half a day",
+  where:"Where the audit and cyber-insurance conversations happen.",
+  needs:["Enforcement in place","Logging configured"],
+  actions:["Pull traceable, searchable logs demonstrating privileged access protection.","Consolidate identity reporting across hybrid environments so the audit is one conversation, not several.","Package it against the specific questions your compliance regime or insurer asks."],
+  kv:[["Use case","audit and cyber insurance evidence"],["Evidence","traceable, searchable access logs"]],
+  verify:"You can answer a coverage question with a report rather than a spreadsheet exercise.",
+  gates:"Sign-off."},
+ {t:"Set the operating rhythm",meta:"Ongoing · monthly",
+  where:"Process.",
+  needs:["Named owners for AD hygiene and for path remediation"],
+  actions:["Re-run the never-logged-in and dormant checks monthly — AD accumulates stale accounts continuously.","Re-run BloodHound after any significant AD change.","Feed AD findings into Splunk alongside cloud identity so the two are investigated together."],
+  kv:[["Hygiene cadence","monthly"],["Path re-scan","after significant change"]],
+  verify:"A trend line, and a process that survives the people who built it.",
+  gates:"Nothing — end state."}
+]}],
+
+nhi:[
+{p:"Phase 0",t:"Decide scope before you discover",hue:"var(--l-source)",steps:[
+ {t:"Confirm entitlement and integration maturity",meta:"Licensing and validation · days",
+  where:"Outside the product, and this one genuinely needs checking.",
+  needs:["Duo and CII entitlement","Clarity on which Astrix capabilities are native today"],
+  actions:["Confirm your CII entitlement covers the NHI capabilities you plan to demonstrate.","Verify with your Cisco team which Astrix capabilities are natively inside CII today versus still delivered through the Astrix console. The acquisition closed in June 2026 and the integration boundary is still moving.","Do not build a design document around a capability you have not seen working in the current release."],
+  kv:[["Astrix intent announced","May 2026, ~$400M"],["Acquisition closed","June 2026"],["Integration targets","CII · Secure Access · Duo IAM · Splunk"]],
+  verify:"A written answer on what is available now, from someone who can be held to it.",
+  gates:"Everything. This is the fastest-moving part of the portfolio.",
+  warn:"This portfolio changed materially three times in 2026. Anything you commit to a customer design has a short shelf life — say so out loud."},
+ {t:"Scope the agent estate and the gateways",meta:"Discovery workshop · half a day",
+  where:"A whiteboard exercise with the platform and AI teams, who may never have met the security team.",
+  needs:["Which agent frameworks are in use","Which gateways, if any, are already running"],
+  actions:["List the agent platforms in play — first-party agents, third-party platforms, and the AI applications people already use.","Identify existing gateways. Duo Agentic Identity layers on top of AgentGateway, AWS Bedrock AgentCore, Arcade, Cisco Secure Access or Envoy, so you likely do not need to replace anything.","Establish who owns agent deployment today. Frequently nobody does, which is itself the finding."],
+  kv:[["Supported gateways","AgentGateway · Bedrock AgentCore · Arcade · Secure Access · Envoy"],["Scope","first-party · third-party platforms · AI applications"]],
+  verify:"A gateway and platform inventory, with owners.",
+  gates:"The authorization design in Phase 3.",
+  warn:"You will find agents nobody owns. Decide in advance whether that is a finding to report or a fire to put out, because it changes how the conversation goes."}
+]},
+{p:"Phase 1",t:"Discover what exists",hue:"var(--l-source)",steps:[
+ {t:"Run NHI discovery",meta:"Astrix within CII · days",
+  where:"Across SaaS, IaaS and PaaS. The only step that finds things nobody registered.",
+  needs:["Connectors to the relevant platforms"],
+  actions:["Discover API keys, service accounts, OAuth tokens and AI agents across the estate.","Pay specific attention to shadow agents — those provisioned without security team involvement.","Separate the inventory into agents, machine credentials, and integrations, because they have different owners and different fixes."],
+  kv:[["Discovers","API keys · service accounts · OAuth tokens · AI agents"],["Across","SaaS · IaaS · PaaS"],["Includes","shadow agents"]],
+  verify:"An inventory materially larger than what anyone expected. If it is not, your connector coverage is incomplete.",
+  gates:"Registration and lifecycle."},
+ {t:"Inventory the AI supply chain",meta:"AI Defense · days",
+  where:"A parallel discovery track, answering a different question — not who is acting, but what they are built on.",
+  needs:["AI Defense entitlement"],
+  actions:["Use <b>AI BOM</b> for centralised visibility over AI software assets, including MCP servers and third-party dependencies.","Use <b>MCP Catalog</b> to discover and inventory MCP servers and registries across public and private platforms.","Cross-reference against the NHI inventory — an agent with credentials and an MCP server with dependencies are two views of the same risk."],
+  kv:[["AI BOM","AI software assets, MCP servers, dependencies"],["MCP Catalog","servers and registries, public and private"],["Frameworks","NIST · OWASP · MITRE, plus Cisco's own"]],
+  verify:"You can answer what AI assets exist and where they came from.",
+  gates:"Meaningful authorization policy. You cannot scope tool access to tools you have not inventoried."},
+ {t:"Map excessive privilege",meta:"CII posture · days",
+  where:"The analysis layer, now with NHIs in scope.",
+  needs:["Discovery complete"],
+  actions:["Identify over-privileged non-human identities and orphaned credentials.","Flag hardcoded credentials — one of the specific risks this architecture exists to reduce.","Prioritise by what the identity can reach, not by how many there are."],
+  kv:[["Named risks","hardcoded credentials · overprivileged access · unpredictable behaviour"]],
+  verify:"A prioritised list ordered by blast radius.",
+  gates:"Remediation and lifecycle design."}
+]},
+{p:"Phase 2",t:"Give every agent an identity",hue:"var(--l-assess)",steps:[
+ {t:"Register agents in Duo Directory",meta:"Duo Agentic Identity · days",
+  where:"Duo Directory, which is what the agent lifecycle capability is built on.",
+  needs:["Discovery output","Duo Directory in place"],
+  actions:["Make every agent a first-class non-human identity rather than an anonymous credential.","Use Duo NHI so the agent process itself carries a Duo identity — no separate identity service is required.","Register MCP servers and tools alongside the agents themselves."],
+  kv:[["Built on","Duo Directory"],["Agent identity","Duo NHI, agent process itself"],["Registers","agents · MCP servers · tools"]],
+  verify:"A centralised inventory of agent identities and activity.",
+  gates:"Authorization. You cannot write per-agent policy for an unregistered agent."},
+ {t:"Map every agent to an accountable human",meta:"Governance · days, and the hardest step socially",
+  where:"Governance rather than product. This is the spine of the whole model.",
+  needs:["An agreed ownership model","Executive backing for the awkward conversations"],
+  actions:["Assign every agent a named human owner, so every autonomous action has an audit trail leading to a person.","Handle the orphans explicitly — an agent nobody will own should be decommissioned, not adopted by the security team.","Record the mapping where auditors can find it."],
+  kv:[["Purpose","accountability and audit trail"],["Principle","never implicit trust"]],
+  verify:"Zero agents without a named owner.",
+  gates:"Any credible governance claim.",
+  warn:"This is where the project stalls. The technical registration takes a day; getting business owners to accept accountability for an agent takes weeks. Start it early and in parallel."},
+ {t:"Define the agent lifecycle",meta:"Process design · days",
+  where:"Process, with product support.",
+  needs:["Ownership model agreed"],
+  actions:["Define onboarding, enablement and offboarding, each with human oversight.","Write the offboarding step first — it is the one everyone skips, and orphaned agent credentials are exactly what discovery keeps finding.","Set a review cadence for agents that have gone quiet."],
+  kv:[["Stages","onboard · enable · offboard"],["Oversight","human, at each stage"]],
+  verify:"An agent can be decommissioned end to end in a test.",
+  gates:"Sustainable operation."}
+]},
+{p:"Phase 3",t:"Authorize every action",hue:"var(--l-enforce)",steps:[
+ {t:"Deploy per-tool-call authorization",meta:"Duo Agentic Identity · days to weeks",
+  where:"On top of your existing gateway. Duo supplies the authorization layer; the gateway stays yours.",
+  needs:["Registered agents","A supported gateway","Tool inventory from Phase 1"],
+  actions:["Apply Duo Agentic Identity to your gateway — AgentGateway, AWS Bedrock AgentCore, Arcade, Cisco Secure Access or Envoy.","Write policy at tool granularity: govern which tools an agent may invoke, not merely which MCP servers it can reach.","Start restrictive and widen. Widening after a blocked call is a conversation; narrowing after an incident is a post-mortem."],
+  kv:[["Granularity","per tool call"],["Not just","which MCP server"],["Audit","identity-correlated"],["Gateway","whichever you already run"]],
+  verify:"An agent is allowed one tool on a server and denied another on the same server.",
+  gates:"Everything downstream in runtime enforcement.",
+  warn:"Server-level authorization looks like it works and is not meaningfully different from no authorization. Tool-level granularity is the entire point of this component."},
+ {t:"Enforce least privilege with time bounds",meta:"Duo + Secure Access · days",
+  where:"The access layer, limiting both scope and duration.",
+  needs:["Policy from step 10"],
+  actions:["Define not only which services an agent can access but which actions it can perform.","Use identity-aware, time-bound credentials to limit scope and duration.","Apply authorization policies consistently across tools and services through the MCP gateway."],
+  kv:[["Limits","scope and duration"],["Applied","consistently across tools and services"]],
+  verify:"Credentials expire on schedule in a test.",
+  gates:"The runtime layer."},
+ {t:"Add ephemeral privilege where standing access remains",meta:"Britive integration · varies",
+  where:"Runtime privilege, after authentication. Optional, but it addresses the gap the rest leaves.",
+  needs:["A Britive entitlement"],
+  actions:["Use just-in-time and just-enough access with ephemeral credentials for identities that still hold standing privilege.","Feed policy decisions from Duo, CII and Secure Access signals into the runtime control plane.","Forward access events, privilege escalations and policy decisions to Splunk."],
+  kv:[["Model","JIT and JEA, ephemeral credentials"],["Inputs","Duo · CII · Secure Access signals"],["Logs to","Splunk"]],
+  verify:"Access appears for a task and disappears when it completes.",
+  gates:"Nothing — this is a depth control, not a prerequisite."}
+]},
+{p:"Phase 4",t:"Watch what they actually do",hue:"var(--l-runtime)",steps:[
+ {t:"Turn on MCP visibility and policy control",meta:"Cisco Secure Access · days",
+  where:"In-path, on agent-to-tool connectivity.",
+  needs:["Secure Access deployed","Agent traffic routed through it"],
+  actions:["Enable discovery, logging and policy control over MCP communications with in-path controls.","Confirm inspection outcomes are being recorded, not just traffic volumes.","Unify policy across SD-WAN and SSE so governance is one framework rather than two."],
+  kv:[["Controls","in-path"],["Covers","agent-to-tool connectivity"],["Unified across","SD-WAN and SSE"]],
+  verify:"MCP sessions appear with policy decisions attached.",
+  gates:"Intent-aware inspection."},
+ {t:"Enable intent-aware inspection",meta:"Secure Access · days",
+  where:"The inspection layer, evaluating meaning rather than syntax.",
+  needs:["MCP visibility in place"],
+  actions:["Combine rapid detection with cloud-based analysis to evaluate the intent behind agentic messages and actions.","Tune against your own agent traffic — agentic workflows are semantically complex and generic tuning will be noisy.","Confirm what happens on a detection: log, alert, or block."],
+  kv:[["Evaluates","intent behind messages and actions"],["Method","rapid detection plus cloud analysis"]],
+  verify:"A deliberately anomalous tool request is detected.",
+  gates:"Nothing further in this track."},
+ {t:"Add agentic guardrails",meta:"AI Defense · days",
+  where:"On the agent and application side, complementing authorization.",
+  needs:["AI Defense entitlement"],
+  actions:["Enable real-time guardrails that continuously monitor agentic interactions for manipulation or unsafe behaviour.","Specifically target poisoned tools and prompts designed to trigger unauthorized tool use.","Consider the NVIDIA NeMo Guardrails integration if you already run that framework."],
+  kv:[["Detects","poisoned tools · manipulative prompts"],["Integrates with","NVIDIA NeMo Guardrails"]],
+  verify:"A manipulated prompt is caught in a controlled test.",
+  gates:"Nothing.",
+  warn:"Guardrails and authorization solve different problems. An authorized tool call can still be a manipulated one, and a blocked call was never a behaviour question. You need both."},
+ {t:"Red team the agents",meta:"AI Defense · varies",
+  where:"An assessment activity rather than a control. Worth scoping into the same engagement.",
+  needs:["Agents in a testable state"],
+  actions:["Run adaptive single-turn and multi-turn testing against models and agents, in the languages your users actually use.","Map results to your chosen framework — NIST, OWASP, MITRE, or Cisco's own AI security and safety framework.","Feed findings back into guardrail and authorization policy."],
+  kv:[["Testing","adaptive, single and multi-turn"],["Languages","multiple"],["Maps to","NIST · OWASP · MITRE · Cisco framework"]],
+  verify:"A findings report that changes at least one policy.",
+  gates:"Nothing — end of the assessment loop."}
+]},
+{p:"Phase 5",t:"Operate at machine speed",hue:"var(--l-ops)",steps:[
+ {t:"Land agent telemetry in Splunk",meta:"Telemetry · half a day",
+  where:"The shared data plane. This is the piece that makes the rest investigable.",
+  needs:["Splunk or another SIEM"],
+  actions:["Forward agent activity so it sits alongside human identity events already correlated by CII.","Confirm an analyst can run one investigation across human and non-human activity rather than two.","Include identity-correlated audit from Duo Agentic Identity so every tool call traces to an agent and its human owner."],
+  kv:[["Data plane","human + non-human + agent"],["Audit","identity-correlated, per tool call"],["Outcome","one investigation, not two"]],
+  verify:"An analyst traces a tool call to an agent to a human owner in one query.",
+  gates:"Credible incident response for agentic activity."},
+ {t:"Close the loop on discovery",meta:"Ongoing · continuous",
+  where:"Back at the start. Agent estates grow faster than any other identity population.",
+  needs:["A named owner","A cadence"],
+  actions:["Re-run NHI discovery continuously rather than as a project milestone — shadow agents appear between reviews, not during them.","Review agents that have gone quiet and offboard them.","Re-check the gateway and capability list each quarter; this portfolio is still changing shape."],
+  kv:[["Discovery","continuous, not one-off"],["Review","quiet agents for offboarding"],["Re-check","gateway and capability support quarterly"]],
+  verify:"New agents surface within days of appearing, not at the next audit.",
+  gates:"Nothing — end state."}
+]}]
+};
+
+var COMPONENTS=[
+{n:"Cisco Identity Intelligence",cat:"Assessment",hue:"var(--l-assess)",tag:"assess",m:["work","ad","nhi"],
+ plain:"The analysis engine underneath everything. Aggregates identity data across sources and runs checks against it.",
+ how:["Built on the Oort acquisition; the product documentation still lives on the Oort domain.","Aggregates from Entra ID, Duo, Okta, GitHub, Google, Salesforce, Workday and others.","Two categories of insight: identity threat detection and identity posture management.","Applies analytics and AI to detect suspicious activity, potential threats and policy violations.","Exposes a public GraphQL API with client credentials, and webhook destinations for alerts and failed checks."],
+ needs:["API-based integrations with your identity sources.","Up to 14 days after integration for data to stabilise."],
+ dep:"The common layer across all three populations. Whatever you are assessing, this is where the analysis happens.",
+ watch:"Check compatibility per check — each one lists which data sources it works with, so a source you skip silently removes checks from your report rather than flagging a gap."},
+{n:"Identity Security Assessment",cat:"Assessment",hue:"var(--l-assess)",tag:"assess",m:["work","ad"],
+ plain:"The pre-built dashboard that turns CII's findings into something you can present.",
+ how:["Three sections: IAM Hygiene, MFA Analysis, and Threat Insights &amp; Unusual Activity.","Aggregates data from every connected source in the tenant.","Every counter drills through to the underlying list of impacted users.","Customisable and exportable, and explicitly designed as a baseline to measure progress against later."],
+ needs:["Connected sources and stabilised data.","Reached from Dashboards, then the dashboard selector — it defaults to Posture, not ISA."],
+ dep:"Built around human identity. NHI findings surface in CII but not necessarily in this dashboard — confirm before promising an agent-focused ISA readout.",
+ watch:"Keep the first export. Its value as a baseline for the second assessment is higher than its value as a report."},
+{n:"Identity checks",cat:"Assessment",hue:"var(--l-assess)",tag:"assess",m:["work","ad","nhi"],
+ plain:"The individual tests. Each has published criteria, compatible sources and remediation guidance.",
+ how:["Split between posture management and threat detection.","Each check documents what causes a user to fail it, which data sources support it, and how to remediate.","Most have customisable settings so you can fit them to the environment."],
+ needs:["The data source each check depends on."],
+ dep:"Universal, but which checks are available depends entirely on which sources you connected.",
+ watch:"Tune before the first readout. An untuned check turns the workshop into an argument about false positives instead of a conversation about risk."},
+{n:"User trust levels",cat:"Assessment",hue:"var(--l-assess)",tag:"assess",m:["work","ad"],
+ plain:"Per-user scoring that threat findings attach to, so you can prioritise by who is affected.",
+ how:["The Threat Insights section of the ISA associates its checks with trust levels.","Turns a flat list of failures into a prioritised one."],
+ needs:["Behavioural data, which accumulates during the stabilisation window."],
+ dep:"A human-identity concept. The equivalent prioritisation for agents comes from blast radius and tool scope instead.",
+ watch:"The same failed check means something very different against a privileged admin than against a dormant contractor. Reporting counts without trust context wastes the signal."},
+{n:"Astrix NHI discovery",cat:"Discovery",hue:"var(--l-source)",tag:"source",m:["ad","nhi"],
+ plain:"Finds the non-human identities nobody registered — including agents the security team never approved.",
+ how:["Maps API keys, service accounts, OAuth tokens and AI agents across SaaS, IaaS and PaaS.","Explicitly covers shadow agents provisioned without security involvement.","Acquired by Cisco for approximately $400M; intent announced May 2026, closed June 2026.","Founded in Tel Aviv in 2021 by Alon Jackson and Idan Gour, both Unit 8200 alumni. Had raised $85M across three rounds.","Capabilities land in CII for visibility, Secure Access and Duo IAM for enforcement, and Splunk for the SOC workflow."],
+ needs:["Connectors to the platforms where non-human identities live."],
+ dep:"Central to the non-human track. Also relevant to AD, where service accounts are the overlap between the two worlds.",
+ watch:"The integration boundary is still moving. Verify what is native inside CII today versus still delivered through the Astrix console before you design around it."},
+{n:"Duo Active Directory Defense",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["work","ad"],
+ plain:"Visibility into on-prem AD, plus MFA for the legacy protocols that resisted it.",
+ how:["Launched February 2026 at Cisco Live EMEA.","Visibility half: on-prem AD identities — admin, guest, and non-human including service accounts — surface in the CII dashboard, with proprietary checks for misconfigurations and risky anomalies.","Protection half: push-based MFA without the proxy and orchestration layers these deployments traditionally required.","Builds on Duo's existing Windows Logon and RDP integrations.","Partnered with SpecterOps BloodHound Enterprise for attack path intelligence."],
+ needs:["Duo entitlement covering AD Defense.","AD read access for the visibility half."],
+ dep:"Core to Active Directory. Touches workforce where hybrid users span both worlds, and non-human through service accounts.",
+ watch:"Cisco Talos found nearly half of identity-based attacks focus on AD. An assessment that covers only cloud identity misses where the attacks actually are."},
+{n:"BloodHound Enterprise",cat:"Assessment",hue:"var(--l-assess)",tag:"assess",m:["ad"],
+ plain:"Maps the privilege escalation paths through Active Directory that make an over-privileged account dangerous.",
+ how:["SpecterOps product, partnered into the Duo AD Defense story.","Adds enriched AD insights and lets teams work known and novel attack paths at scale.","Turns a list of misconfigurations into a prioritised remediation order."],
+ needs:["A separate SpecterOps entitlement.","Deployment against the in-scope domains."],
+ dep:"Active Directory only. There is no equivalent path graph for cloud identity or agents in this stack.",
+ watch:"This is a separate commercial arrangement, not part of the Duo entitlement. Confirm before it appears on a customer's expectation list."},
+{n:"Duo MFA",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["work","ad"],
+ plain:"The enforcement control that the ISA's MFA Analysis section is effectively a scorecard for.",
+ how:["Phishing-resistant methods, adaptive device trust, proximity verification.","Covers hybrid environments including legacy AD authentication.","Consistent mobile experience across modern and legacy applications."],
+ needs:["Duo deployment.","Break-glass procedures before enforcement."],
+ dep:"Human identity. Agents get identity through Duo NHI instead, which is a different mechanism.",
+ watch:"Test break-glass before enabling logon MFA. It is the control most likely to lock out the people who would fix a problem with it."},
+{n:"Risk-based authentication",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["work","ad"],
+ plain:"Steps authentication up or down based on signal instead of applying one policy to everyone.",
+ how:["Part of the Duo capability set alongside adaptive device trust and proximity verification.","Consumes identity context so behavioural findings act at login rather than sitting in a report."],
+ needs:["MFA coverage established first."],
+ dep:"Human populations. The agentic equivalent is per-tool-call authorization, which is a different model entirely.",
+ watch:"Pair it with Duo Passport. Risk-based step-up without session continuity means more prompts, and prompt fatigue is what attackers count on."},
+{n:"Duo Directory and SSO",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["work","nhi"],
+ plain:"The identity store — and, less obviously, the registry that agent identities live in.",
+ how:["Simplifies identity management and SSO across thousands of applications.","Duo Agentic Identity's lifecycle capability is built directly on Duo Directory.","Also the access path into CII itself, through the CII SSO application."],
+ needs:["Duo tenant.","Group membership configured for CII dashboard access."],
+ dep:"Matters in human identity as an IdP, and in the agentic track as the agent registry. Less relevant to a pure AD engagement.",
+ watch:"Admins who need CII must exist as Duo end users in a permitted group. Miss that and they get an access error rather than a useful message."},
+{n:"Duo Agentic Identity",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["nhi"],
+ plain:"Identity, authorization and audit built for agents operating at machine speed.",
+ how:["Introduced at RSAC 2026 with three capabilities: discovery built on CII, identity lifecycle built on Duo Directory, and authorization.","Per-tool-call access control, identity-correlated audit, and unified policy management.","Runs on top of whatever gateway you already have — AgentGateway, AWS Bedrock AgentCore, Arcade, Cisco Secure Access or Envoy.","Duo NHI gives the agent process itself a Duo identity, extending from user MFA rather than requiring a separate identity service."],
+ needs:["Registered agents in Duo Directory.","A supported gateway.","A tool inventory to write policy against."],
+ dep:"Non-human and agentic only. This is the component the whole agentic track is built around.",
+ watch:"Governing which MCP servers an agent can reach is not meaningful authorization. Tool-level granularity is the point — if the policy is server-level, you have visibility, not control."},
+{n:"Agent gateways",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["nhi"],
+ plain:"The chokepoint agent traffic passes through. Cisco's position is that it doesn't have to be theirs.",
+ how:["Supported: AgentGateway, AWS Bedrock AgentCore, Arcade, Cisco Secure Access, Envoy.","Cisco's own Agent Gateway applies a common policy framework across approved models, MCP tools, enterprise APIs and web destinations.","Duo and Secure Access work together for fine-grained tool-level authorization in MCP environments."],
+ needs:["Agent traffic actually routed through a gateway — which is not a given in early deployments."],
+ dep:"Agentic only.",
+ watch:"An agent that bypasses the gateway bypasses every control in this architecture. Confirm the traffic path before you trust the policy."},
+{n:"Secure Access MCP controls",cat:"Runtime",hue:"var(--l-runtime)",tag:"runtime",m:["nhi"],
+ plain:"In-path discovery, logging and policy control over agent-to-tool connectivity.",
+ how:["Announced February 2026 as part of the AI-aware SASE capabilities.","Discovers and governs MCP communications with in-path controls and recorded inspection outcomes.","Unified policy enforcement across SD-WAN and SSE in a single framework.","Also includes AI traffic optimisation — detecting AI traffic and applying techniques such as packet duplication to keep interactions responsive during load bursts."],
+ needs:["Secure Access deployed with agent traffic routed through it."],
+ dep:"Agentic only. This is where an authorization decision becomes an action on traffic.",
+ watch:"The performance capability is not incidental. Agentic workflows stall when tool responses are slow, and a security control that adds latency gets routed around."},
+{n:"Intent-aware inspection",cat:"Runtime",hue:"var(--l-runtime)",tag:"runtime",m:["nhi"],
+ plain:"Evaluates the intent behind agentic messages and tool requests rather than their syntax.",
+ how:["Combines rapid detection techniques with cloud-based analysis.","Exists because agentic workflows carry semantically complex messages that conventional tooling cannot interpret — it cannot read the why or the how of an agentic action."],
+ needs:["MCP visibility in place first.","Tuning against your own agent traffic."],
+ dep:"Agentic only.",
+ watch:"Generic tuning will be noisy against real agent traffic. Budget time to tune, and decide up front whether a detection logs, alerts or blocks."},
+{n:"AI Defense — AI BOM and MCP Catalog",cat:"Discovery",hue:"var(--l-source)",tag:"source",m:["nhi"],
+ plain:"Supply-chain inventory for AI. What assets exist, and where they came from.",
+ how:["AI BOM gives centralised visibility and governance over AI software assets, including MCP servers and third-party dependencies.","MCP Catalog discovers and inventories MCP servers and registries across public and private platforms.","Both announced February 2026 in the largest AI Defense expansion since its January 2025 launch."],
+ needs:["AI Defense entitlement."],
+ dep:"Agentic only. Answers a different question from NHI discovery — not who is acting, but what they are built on.",
+ watch:"You cannot write tool-scoped authorization policy for tools you have not inventoried. This is a prerequisite for Duo Agentic Identity policy, not an optional extra."},
+{n:"AI Defense guardrails and red teaming",cat:"Runtime",hue:"var(--l-runtime)",tag:"runtime",m:["nhi"],
+ plain:"Behavioural protection — catching manipulation that authorization alone cannot see.",
+ how:["Real-time guardrails continuously monitor and inspect agentic interactions for manipulation or unsafe behaviour, including poisoned tools and prompts crafted to trigger unauthorized tool use.","Advanced algorithmic red teaming runs adaptive single-turn and multi-turn testing against models and agents in multiple languages.","Maps to NIST, OWASP and MITRE frameworks, plus Cisco's Integrated AI Security and Safety Framework.","Integrates with NVIDIA NeMo Guardrails and forms part of the Cisco Secure AI Factory with NVIDIA."],
+ needs:["AI Defense entitlement.","Agents in a testable state for the red teaming half."],
+ dep:"Agentic only.",
+ watch:"Guardrails and authorization answer different questions. An authorized tool call can still be a manipulated one. Deploying one and calling it agent security leaves the other gap wide open."},
+{n:"Britive JIT access",cat:"Enforcement",hue:"var(--l-enforce)",tag:"enforce",m:["work","ad","nhi"],
+ plain:"Just-in-time, just-enough privilege that disappears when the task ends.",
+ how:["Enforces JIT and JEA using ephemeral credentials.","Its Common Policy Framework acts as the runtime control plane, unifying user, role and environmental context from Duo and the Cisco identity stack.","Policies apply based on identity, posture and shared signals from CII and Secure Access.","Access events, privilege escalations and policy decisions log to Splunk."],
+ needs:["A Britive entitlement.","Duo and CII providing the signal."],
+ dep:"Applies across all three, but the argument is strongest for agents — standing privilege assumptions break down once identities can act continuously.",
+ watch:"A partner integration, not a Cisco product. Authentication answers who is entering; this answers what they can do afterwards and for how long. Do not conflate the two in a design."},
+{n:"XDR integration",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["work","ad","nhi"],
+ plain:"The shortest path from a CII finding to something actually happening.",
+ how:["Connects CII to Cisco XDR through Security Cloud Control.","Users and identities known to CII appear in XDR User Insights and populate account context into incidents and investigations.","A supplied workflow ingests failed CII checks as custom security events, normalised as detection findings in the XDR data warehouse.","Enables automated response actions such as killing sessions and quarantining users."],
+ needs:["Cisco XDR and Security Cloud Control."],
+ dep:"Applies wherever CII does. The response actions are most mature for human identity.",
+ watch:"Without this, the assessment produces a document. With it, a failed check can trigger a response. It is the cheapest step with the largest change in outcome."},
+{n:"Splunk",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["work","ad","nhi"],
+ plain:"The shared data plane where human, non-human and agent activity meet.",
+ how:["Already ingests human identity events, which CII correlates across systems.","Adding the non-human layer to the same data plane is what lets an analyst run one investigation instead of two.","Agent detection telemetry from the Astrix integration lands here by design."],
+ needs:["Splunk, or another SIEM — the architecture does not require Splunk specifically."],
+ dep:"Universal. The investigation-economics argument holds for every population.",
+ watch:"This is the least glamorous component and arguably the most load-bearing. Two consoles and a correlation problem is how identity incidents get missed."},
+{n:"CII API and webhooks",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["work","ad","nhi"],
+ plain:"How findings leave the dashboard and enter your own systems.",
+ how:["Public GraphQL API, accessed with client credentials configured as API clients.","Webhook destinations offer a standard interface for pushing operational alerts and failed checks into systems with no native connector."],
+ needs:["API client credentials configured in CII."],
+ dep:"Universal.",
+ watch:"If findings need to reach a CMDB or ticketing system, design this early. Retrofitting an integration after the customer has built a manual export process is a hard conversation."},
+{n:"Accountable human ownership",cat:"Governance",hue:"var(--l-ops)",tag:"ops",m:["nhi"],
+ plain:"Every agent mapped to a named person. Not a product feature — the governance spine.",
+ how:["Agents are mapped to accountable humans for auditability, so every autonomous action traces back to someone.","Cisco's framing is explicit: never give implicit trust, never more trust than necessary, continuously verify.","Underpins the audit trail that makes agent activity defensible to a regulator."],
+ needs:["An agreed ownership model, and executive backing for the conversations it forces."],
+ dep:"Agentic. The equivalent for human identity is simply the employment relationship.",
+ watch:"This is where these projects stall. Technical registration takes a day; getting a business owner to accept accountability for an autonomous agent takes weeks. Start it in parallel with discovery, not after."},
+{n:"Agent lifecycle",cat:"Governance",hue:"var(--l-ops)",tag:"ops",m:["nhi"],
+ plain:"Onboarding, enablement and offboarding for agents, with human oversight at each stage.",
+ how:["Agents need an identity lifecycle in the same way employees do.","Least privilege applies: fine-grained permissions scoped to the specific tasks an agent performs and resources it needs.","Cisco research from January 2026 put security concerns as the biggest barrier to agent adoption for a majority of security and IT executives surveyed."],
+ needs:["Registration and ownership in place first."],
+ dep:"Agentic.",
+ watch:"Write the offboarding step first. Orphaned agent credentials are precisely the class of finding that NHI discovery keeps surfacing, and they are created by lifecycles that only have a beginning."}
+];
+
+var picker=document.getElementById("picker");
+MODES.forEach(function(m){
+  var b=document.createElement("button");
+  b.className="mode";b.style.setProperty("--hue",m.hue);
+  b.setAttribute("aria-pressed","false");b.dataset.mode=m.id;
+  b.innerHTML='<span class="mode-name">'+m.name+'</span><span class="mode-for">'+m.forWho+'</span>'+
+    '<span class="mode-facts">'+m.facts.map(function(f){return '<span class="fact">'+f+'</span>';}).join("")+'</span>';
+  b.addEventListener("click",function(){setMode(m.id);});
+  picker.appendChild(b);
+});
+
+var openNodes={};
+var LABEL={required:"Required",recommended:"Recommended",optional:"Optional",na:"Not used"};
+
+function renderMap(mode){
+  var map=document.getElementById("map");map.innerHTML="";
+  BRANCHES.forEach(function(br){
+    var c={required:0,recommended:0,optional:0,na:0};
+    br.items.forEach(function(it){c[it.s[mode]]++;});
+    var parts=[];
+    if(c.required)parts.push(c.required+" required");
+    if(c.recommended)parts.push(c.recommended+" recommended");
+    if(c.optional)parts.push(c.optional+" optional");
+    if(c.na)parts.push(c.na+" not used");
+    var node=document.createElement("div");
+    node.className="node"+(openNodes[br.id]?" open":"");
+    node.style.setProperty("--hue",br.hue);
+    var head=document.createElement("button");
+    head.className="node-head";
+    head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    head.innerHTML='<span class="node-top"><span class="node-name">'+br.title+'</span><span class="chev">▼</span></span>'+
+      '<span class="node-count">'+parts.join(" · ")+'</span>';
+    head.addEventListener("click",function(){
+      openNodes[br.id]=!openNodes[br.id];
+      node.classList.toggle("open",openNodes[br.id]);
+      head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    });
+    var body=document.createElement("div");body.className="node-body";
+    br.items.forEach(function(it){
+      var st=it.s[mode];var d=document.createElement("div");
+      d.className="item"+(st==="na"?" na":"");
+      d.innerHTML='<div class="item-top"><span class="badge b-'+st+'">'+LABEL[st]+'</span><b>'+it.n+'</b></div><p>'+it.p+'</p>'+
+        (st==="na"?"":'<div class="why">'+it.w+'</div>');
+      body.appendChild(d);
+    });
+    node.appendChild(head);node.appendChild(body);map.appendChild(node);
+  });
+}
+
+function renderLLD(mode){
+  var m=MODES.filter(function(x){return x.id===mode;})[0];
+  document.getElementById("lldTitle").innerHTML="Build sequence — "+m.name;
+  document.getElementById("lldSub").textContent=m.sub;
+  var host=document.getElementById("lld");host.innerHTML="";
+  var n=0;
+  LLD[mode].forEach(function(ph){
+    var h=document.createElement("div");h.className="phase";h.style.setProperty("--hue",ph.hue);
+    h.innerHTML='<span class="phase-n">'+ph.p+'</span><span class="phase-t">'+ph.t+'</span><span class="phase-line"></span>';
+    host.appendChild(h);
+    ph.steps.forEach(function(s){
+      n++;
+      var el=document.createElement("div");
+      el.className="lstep";el.dataset.n=n;el.style.setProperty("--hue",ph.hue);
+      var body='<div class="blk"><h5>Where it sits</h5><p>'+s.where+'</p></div>'+
+        '<div class="blk"><h5>Needs to be in place first</h5><ul>'+s.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul></div>'+
+        '<div class="blk"><h5>Do this</h5><ol>'+s.actions.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ol></div>'+
+        (s.kv?'<div class="blk"><h5>Values to have ready</h5><div class="kv">'+s.kv.map(function(p){return '<div><dt>'+p[0]+'</dt><dd>'+p[1]+'</dd></div>';}).join("")+'</div></div>':"")+
+        '<div class="blk"><h5>Confirm it worked</h5><div class="check">'+s.verify+'</div></div>'+
+        '<div class="blk"><h5>Blocked until this is done</h5><div class="gate">'+s.gates+'</div></div>'+
+        (s.warn?'<div class="warn"><b>Watch out — </b>'+s.warn+'</div>':"");
+      el.innerHTML='<button class="step-head" aria-expanded="false">'+
+        '<span class="step-title"><span class="step-t">'+s.t+'</span><span class="chev">▼</span></span>'+
+        '<span class="step-meta">'+s.meta+'</span></button>'+
+        '<div class="step-body">'+body+'</div>';
+      var hd=el.querySelector(".step-head");
+      hd.addEventListener("click",function(){
+        var o=el.classList.toggle("open");
+        hd.setAttribute("aria-expanded",String(o));
+      });
+      host.appendChild(el);
+    });
+  });
+  document.getElementById("expandAll").textContent="Expand all";
+}
+
+function setMode(id){
+  var m=MODES.filter(function(x){return x.id===id;})[0];
+  Array.prototype.forEach.call(picker.children,function(b){
+    b.setAttribute("aria-pressed",String(b.dataset.mode===id));
+  });
+  var hub=document.getElementById("hub");
+  hub.style.setProperty("--hue",m.hue);
+  hub.innerHTML="<b>"+m.hub+"</b><span>"+m.forWho+"</span>";
+  renderMap(id);renderLLD(id);
+}
+
+document.getElementById("expandAll").addEventListener("click",function(){
+  var steps=Array.prototype.slice.call(document.querySelectorAll("#lld .lstep"));
+  var anyClosed=steps.some(function(s){return !s.classList.contains("open");});
+  steps.forEach(function(s){
+    s.classList.toggle("open",anyClosed);
+    s.querySelector(".step-head").setAttribute("aria-expanded",String(anyClosed));
+  });
+  this.textContent=anyClosed?"Collapse all":"Expand all";
+});
+
+var subs=Array.prototype.slice.call(document.querySelectorAll(".subtabs button"));
+var subViews={map:document.getElementById("sub-map"),lld:document.getElementById("sub-lld")};
+subs.forEach(function(t){
+  t.addEventListener("click",function(){
+    subs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(subViews).forEach(function(k){subViews[k].classList.toggle("hidden",k!==t.dataset.sub);});
+  });
+});
+
+var CATS=[{id:"all",n:"All"},{id:"source",n:"Discovery"},{id:"assess",n:"Assessment"},
+  {id:"enforce",n:"Enforcement"},{id:"runtime",n:"Runtime"},{id:"ops",n:"Ops &amp; governance"}];
+var filters=document.getElementById("filters");
+CATS.forEach(function(c){
+  var b=document.createElement("button");
+  b.innerHTML=c.n;b.dataset.cat=c.id;
+  b.setAttribute("aria-pressed",String(c.id==="all"));
+  b.addEventListener("click",function(){
+    Array.prototype.forEach.call(filters.children,function(x){x.setAttribute("aria-pressed",String(x===b));});
+    Array.prototype.forEach.call(document.getElementById("compList").children,function(el){
+      el.classList.toggle("hidden",c.id!=="all"&&el.dataset.tag!==c.id);
+    });
+  });
+  filters.appendChild(b);
+});
+
+var DEPS=[{k:"work",l:"Workforce",c:"work"},{k:"ad",l:"Active Directory",c:"ad"},{k:"nhi",l:"Non-human",c:"nhi"}];
+var list=document.getElementById("compList");
+COMPONENTS.forEach(function(c){
+  var el=document.createElement("div");
+  el.className="comp";el.style.setProperty("--hue",c.hue);el.dataset.tag=c.tag;
+  var chips=DEPS.map(function(d){
+    var on=c.m.indexOf(d.k)!==-1;
+    return '<i class="'+(on?d.c:"off")+'">'+d.l+'</i>';
+  }).join("");
+  var allThree=c.m.length===3;
+  var body='<h4>Where it applies</h4><p class="depnote">'+(allThree?"Applies to all three identity populations. ":"")+c.dep+'</p>'+
+    '<h4>How it works</h4><ul>'+c.how.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<h4>What it needs</h4><ul>'+c.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<div class="warn"><b>Watch out — </b>'+c.watch+'</div>';
+  el.innerHTML='<button class="comp-head" aria-expanded="false">'+
+    '<span class="comp-title"><span class="comp-name">'+c.n+'</span><span class="chev">▼</span></span>'+
+    '<span class="cat">'+c.cat+'</span><p class="comp-plain">'+c.plain+'</p>'+
+    '<span class="dep"><em>Covers</em>'+chips+'</span></button>'+
+    '<div class="comp-body">'+body+'</div>';
+  var h=el.querySelector(".comp-head");
+  h.addEventListener("click",function(){
+    var o=el.classList.toggle("open");h.setAttribute("aria-expanded",String(o));
+  });
+  list.appendChild(el);
+});
+
+var tabs=Array.prototype.slice.call(document.querySelectorAll(".tabs button"));
+var views={deploy:document.getElementById("view-deploy"),comp:document.getElementById("view-comp"),ref:document.getElementById("view-ref")};
+tabs.forEach(function(t){
+  t.addEventListener("click",function(){
+    tabs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(views).forEach(function(k){views[k].classList.toggle("hidden",k!==t.dataset.view);});
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+
+setMode("work");
+})();
+</script>
+</body>
+</html>
