@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cisco IQ — components, deployment and low-level build</title>
+<meta name="description" content="Interactive reference for Cisco IQ: component map, deployment modes, phased low-level build sequence, and technical reference. Built from Cisco documentation to August 2026.">
+<meta name="author" content="">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cisco IQ — components, deployment and low-level build">
+<meta property="og:description" content="Pick a deployment mode, see which components you need, then work through the build in the order that avoids rework.">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%2316212C'/%3E%3Ccircle cx='11' cy='16' r='3.2' fill='%230F6FA3'/%3E%3Ccircle cx='21' cy='10' r='2.6' fill='%23A8681B'/%3E%3Ccircle cx='21' cy='22' r='2.6' fill='%237C2B4C'/%3E%3Cpath d='M13.6 14.6 18.6 11.4M13.6 17.4 18.6 20.6' stroke='%23C6D0D8' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDF0; --paper-2:#F5F7F9; --white:#fff;
+  --ink:#16212C; --ink-60:#54636F; --ink-30:#9AA7B1; --rule:#C6D0D8;
+  /* architectural layer hues */
+  --estate:#4F6272; --collect:#0E7A6B; --cloud:#2B55A6;
+  --onprem:#8A4526; --ai:#6A3D9E; --alert:#A83228;
+  /* deployment mode hues */
+  --m-saas:#0F6FA3; --m-teth:#A8681B; --m-air:#7C2B4C;
+  /* sub-view hues */
+  --v-need:#0E7A6B; --v-build:#4A3B8C;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:26px 16px 90px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;
+  background:rgba(22,33,44,.07);padding:1px 4px;border-radius:2px}
+
+.mast{border-bottom:2px solid var(--ink);padding-bottom:15px;margin-bottom:20px}
+.mast h1{font-size:clamp(29px,7.5vw,48px);line-height:1.02;letter-spacing:-.025em;font-weight:700;margin:0 0 9px}
+.mast p{margin:0;max-width:58ch;color:var(--ink-60);font-size:15px}
+.stamp{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-60);margin-top:11px}
+
+.tabs{display:flex;margin:20px 0 22px;border:1.5px solid var(--ink);border-radius:2px;overflow:hidden;position:sticky;top:0;z-index:30;background:var(--paper)}
+.tabs button{flex:1;font:inherit;font-size:13px;font-weight:600;padding:11px 5px;
+  background:var(--paper);color:var(--ink);border:0;border-right:1.5px solid var(--ink);cursor:pointer}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button:focus-visible{outline:3px solid var(--collect);outline-offset:-3px}
+
+.step-label{font-size:12px;font-weight:700;color:var(--ink-60);margin:0 0 9px}
+
+/* ---------- mode picker: each option has its own colour ---------- */
+.picker{display:grid;gap:9px;margin-bottom:8px}
+@media(min-width:700px){.picker{grid-template-columns:repeat(3,1fr)}}
+.mode{text-align:left;font:inherit;cursor:pointer;padding:14px 15px;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;border-top:5px solid var(--hue);
+  transition:background .14s,border-color .14s,color .14s}
+.mode:hover{background:var(--white)}
+.mode[aria-pressed="true"]{background:var(--hue);border-color:var(--hue);border-top-color:var(--ink);color:#fff}
+.mode[aria-pressed="true"] .mode-for{color:rgba(255,255,255,.86)}
+.mode:focus-visible{outline:3px solid var(--hue);outline-offset:3px}
+.mode-name{font-weight:700;font-size:16.5px;letter-spacing:-.01em;display:block}
+.mode-for{font-size:13.5px;color:var(--ink-60);margin-top:3px;display:block;line-height:1.4}
+.mode-facts{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.fact{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 6px;border-radius:2px;
+  background:rgba(22,33,44,.08);color:var(--ink-60)}
+.mode[aria-pressed="true"] .fact{background:rgba(255,255,255,.2);color:#fff}
+
+/* ---------- sub-view switch: one colour each ---------- */
+.subtabs{display:flex;margin:22px 0 18px;border-radius:2px;overflow:hidden;gap:6px}
+.subtabs button{flex:1;font:inherit;font-size:12.5px;font-weight:600;padding:10px 6px;cursor:pointer;
+  background:var(--paper-2);color:var(--hue);border:1.5px solid var(--hue);border-radius:2px;
+  transition:background .14s,color .14s}
+.subtabs button:hover{background:var(--white)}
+.subtabs button[aria-selected="true"]{background:var(--hue);color:#fff}
+.subtabs button:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 4px;font-size:12.5px;color:var(--ink-60);
+  padding:11px 13px;background:var(--paper-2);border-left:3px solid var(--v-need)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+.hub{margin:22px 0 0;padding:14px 17px;background:var(--hue,var(--ink));color:#fff;border-radius:3px;display:inline-block;max-width:100%}
+.hub b{display:block;font-size:17px;letter-spacing:-.01em}
+.hub span{font-size:13px;color:rgba(255,255,255,.85)}
+.map{position:relative;margin-left:16px;padding-left:26px;padding-top:6px}
+.map::before{content:"";position:absolute;left:0;top:0;bottom:34px;width:2px;background:var(--rule)}
+.node{position:relative;margin-bottom:11px}
+.node::before{content:"";position:absolute;left:-26px;top:-6px;width:26px;height:30px;
+  border-left:2px solid var(--rule);border-bottom:2px solid var(--rule);border-bottom-left-radius:12px}
+.node-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;padding:12px 14px}
+.node-head:hover{background:var(--white)}
+.node-head:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+.node-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.node-name{font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.chev{color:var(--ink-30);font-size:12px;transition:transform .18s;flex-shrink:0}
+.node.open .chev,.comp.open .chev,.lstep.open .chev{transform:rotate(180deg)}
+.node-count{font-size:12.5px;color:var(--ink-60);margin-top:3px}
+.node-body{display:none;padding:9px 0 6px 12px;border-left:2px dotted var(--rule);margin-left:8px}
+.node.open .node-body{display:block}
+.item{padding:9px 0;border-bottom:1px solid var(--rule)}
+.item:last-child{border-bottom:0}
+.item-top{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.item b{font-size:14.5px;font-weight:600}
+.item p{margin:4px 0 0;font-size:13.5px;color:var(--ink-60);line-height:1.5}
+.item .why{margin-top:4px;font-size:13px;background:rgba(22,33,44,.045);padding:6px 9px;border-radius:2px;border-left:2px solid var(--hue)}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 7px;border-radius:2px;flex-shrink:0;margin-top:2px;font-weight:500}
+.b-required{background:var(--ink);color:var(--paper)}
+.b-recommended{background:var(--v-need);color:#fff}
+.b-optional{background:transparent;color:var(--ink-60);border:1.5px solid var(--rule)}
+.b-na{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.item.na b,.item.na p{color:var(--ink-30)}
+
+/* LLD */
+.lld-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.lld-bar h3{font-size:18px;font-weight:700;margin:0;letter-spacing:-.015em;color:var(--v-build)}
+.lld-bar p{margin:2px 0 0;font-size:13.5px;color:var(--ink-60)}
+.expand-all{font:inherit;font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--v-build);border-radius:100px;color:var(--v-build)}
+.expand-all:hover{background:var(--white)}
+.phase{margin:26px 0 12px;display:flex;align-items:center;gap:11px}
+.phase-n{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:2px;
+  background:var(--hue);color:#fff;flex-shrink:0}
+.phase-t{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.phase-line{flex:1;height:1.5px;background:var(--rule)}
+.lstep{position:relative;margin:0 0 8px 13px;padding-left:29px;border-left:2px solid var(--rule)}
+.lstep:last-of-type{border-left-color:transparent}
+.lstep::before{content:attr(data-n);position:absolute;left:-14px;top:11px;width:27px;height:27px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--v-build);color:var(--v-build);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lstep.open::before{background:var(--v-build);color:#fff}
+.step-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;padding:11px 13px;margin-bottom:10px}
+.step-head:hover{background:var(--white)}
+.step-head:focus-visible{outline:3px solid var(--v-build);outline-offset:2px}
+.step-title{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.step-t{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.step-meta{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-60);margin-top:4px;display:block}
+.step-body{display:none;padding:0 0 20px}
+.lstep.open .step-body{display:block}
+.step-body h5{font-size:11px;font-weight:700;margin:0 0 5px;color:var(--hue)}
+.blk{margin-bottom:13px}
+.blk p{margin:0;font-size:13.5px;line-height:1.55}
+.blk ul,.blk ol{margin:0;padding-left:18px}
+.blk li{font-size:13.5px;margin-bottom:5px;line-height:1.5}
+.kv{border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--white)}
+.kv div{display:flex;border-bottom:1px solid var(--rule);font-size:12.5px}
+.kv div:last-child{border-bottom:0}
+.kv dt{flex:0 0 42%;padding:6px 9px;background:var(--paper-2);font-weight:500;margin:0}
+.kv dd{flex:1;padding:6px 9px;margin:0;color:var(--ink-60);font-family:"IBM Plex Mono",monospace;font-size:11.5px;word-break:break-word}
+.gate{background:rgba(22,33,44,.05);border-left:3px solid var(--ink);padding:8px 11px;font-size:13px;line-height:1.5}
+.check{background:rgba(14,122,107,.08);border-left:3px solid var(--collect);padding:8px 11px;font-size:13px;line-height:1.5}
+.warn{background:rgba(168,50,40,.07);border-left:3px solid var(--alert);padding:9px 11px;font-size:13.5px;line-height:1.5;margin-top:12px}
+.warn b{color:var(--alert)}
+
+/* components */
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.filters button{font:inherit;font-size:12.5px;font-weight:500;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--rule);border-radius:100px;color:var(--ink-60)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.deplegend{font-size:12.5px;color:var(--ink-60);padding:10px 13px;background:var(--paper-2);
+  border-left:3px solid var(--ink);margin-bottom:18px;line-height:1.6}
+.deplegend i{font-style:normal}
+.comp{margin-bottom:10px;border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;background:var(--paper-2);overflow:hidden}
+.comp-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:transparent;border:0;padding:13px 15px}
+.comp-head:hover{background:var(--white)}
+.comp-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.comp-name{font-weight:700;font-size:16px;letter-spacing:-.015em}
+.cat{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--hue);margin-top:4px;display:block}
+.comp-plain{font-size:14px;color:var(--ink-60);margin:5px 0 8px;line-height:1.5}
+.dep{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.dep em{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-30);margin-right:2px}
+.dep i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 8px;
+  border-radius:2px;border:1.5px solid transparent;white-space:nowrap}
+.dep i.saas{background:var(--m-saas);color:#fff}
+.dep i.teth{background:var(--m-teth);color:#fff}
+.dep i.air{background:var(--m-air);color:#fff}
+.dep i.off{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.comp-body{display:none;padding:2px 15px 16px}
+.comp.open .comp-body{display:block}
+.comp.open .comp-head{background:var(--white)}
+.comp-body h4{font-size:11.5px;font-weight:700;color:var(--hue);margin:15px 0 5px}
+.comp-body ul{margin:0;padding-left:17px}
+.comp-body li{font-size:14px;margin-bottom:6px;line-height:1.5}
+.comp-body p.depnote{margin:0;font-size:14px;line-height:1.5}
+
+/* reference */
+.ref h3{font-size:17px;font-weight:700;margin:32px 0 9px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);letter-spacing:-.015em}
+.ref h3:first-child{margin-top:0}
+.tbl{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:3px;background:var(--paper-2)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:480px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:11.5px;color:var(--ink-60);border-bottom:1.5px solid var(--ink);background:var(--paper)}
+th.h-saas{color:#fff;background:var(--m-saas)}
+th.h-teth{color:#fff;background:var(--m-teth)}
+th.h-air{color:#fff;background:var(--m-air)}
+td:first-child{font-weight:500}
+.note{font-size:13px;color:var(--ink-60);margin:9px 0 0;line-height:1.55}
+.qa{border-left:3px solid var(--m-saas);padding:2px 0 2px 13px;margin:14px 0}
+.qa b{display:block;font-size:14.5px;margin-bottom:2px}
+.qa span{font-size:14px;color:var(--ink-60);line-height:1.55}
+dl.gloss{margin:0;font-size:14px}
+dl.gloss div{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--rule)}
+dl.gloss div:last-child{border-bottom:0}
+dl.gloss dt{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;flex:0 0 92px}
+dl.gloss dd{margin:0;color:var(--ink-60);font-size:13.5px;line-height:1.5}
+
+.foot{margin-top:44px;padding-top:15px;border-top:1.5px solid var(--rule);font-size:12.5px;color:var(--ink-60)}
+.hidden{display:none!important}
+@media(min-width:640px){.wrap{padding:42px 30px 100px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="mast">
+  <h1>Cisco IQ</h1>
+  <p>Pick a deployment mode, see which components you need, then work through the build in the order that avoids rework.</p>
+  <div class="stamp">Built from Cisco IQ / IQ Link / Virtual Appliance documentation · current to the August 2026 release</div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-view="deploy">Deployment</button>
+  <button role="tab" aria-selected="false" data-view="comp">Components</button>
+  <button role="tab" aria-selected="false" data-view="ref">Reference</button>
+</div>
+
+<section id="view-deploy">
+  <p class="step-label">Start here — which mode are you planning?</p>
+  <div class="picker" id="picker"></div>
+
+  <div class="subtabs" role="tablist">
+    <button role="tab" aria-selected="true" data-sub="map" style="--hue:var(--v-need)">What you need</button>
+    <button role="tab" aria-selected="false" data-sub="lld" style="--hue:var(--v-build)">Build sequence</button>
+  </div>
+
+  <div id="sub-map">
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ink)"></i> Required</span>
+      <span><i class="dot" style="background:var(--v-need)"></i> Recommended</span>
+      <span><i class="dot" style="background:var(--rule)"></i> Optional</span>
+      <span><i class="dot" style="background:transparent;border:1.5px dashed var(--ink-30)"></i> Not used here</span>
+    </div>
+    <div class="hub" id="hub"></div>
+    <div class="map" id="map"></div>
+  </div>
+
+  <div id="sub-lld" class="hidden">
+    <div class="lld-bar">
+      <div><h3 id="lldTitle"></h3><p id="lldSub"></p></div>
+      <button class="expand-all" id="expandAll">Expand all</button>
+    </div>
+    <div id="lld"></div>
+  </div>
+</section>
+
+<section id="view-comp" class="hidden">
+  <p class="step-label">Filter by layer</p>
+  <div class="filters" id="filters"></div>
+  <p class="deplegend">Each component shows where it applies:
+    <i class="dep" style="display:inline-flex;vertical-align:-3px"><i class="saas">SaaS</i><i class="teth">Tethered</i><i class="air">Air-gapped</i></i>
+    — a filled chip means the component is used in that mode, a dashed one means it isn't.</p>
+  <div id="compList"></div>
+</section>
+
+<section id="view-ref" class="hidden">
+<div class="ref">
+
+  <h3>Deployment modes side by side</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th class="h-saas">SaaS</th><th class="h-teth">On-prem tethered</th><th class="h-air">On-prem air-gapped</th></tr>
+    <tr><td>Platform runs</td><td>Cisco cloud</td><td>Your data centre</td><td>Your data centre</td></tr>
+    <tr><td>Your data lives</td><td>Cisco region you pick</td><td>Your premises</td><td>Your premises</td></tr>
+    <tr><td>AI inference</td><td>Cisco RTP</td><td>Cisco RTP</td><td>Your GPU node</td></tr>
+    <tr><td>GPU needed</td><td>No</td><td>No</td><td>Only for AI features</td></tr>
+    <tr><td>Updates arrive</td><td>Automatic</td><td>Automatic over the tether</td><td>Downloaded and installed by hand</td></tr>
+    <tr><td>Collection</td><td>IQ Link + cloud connectors</td><td>Link and connectors</td><td>Appliance discovers directly</td></tr>
+    <tr><td>Support module</td><td>Yes</td><td>Yes</td><td>From SaaS on a connected machine</td></tr>
+    <tr><td>Peer Benchmarks</td><td>Yes</td><td>No</td><td>No</td></tr>
+    <tr><td>Cloud connectors</td><td>Yes</td><td>Yes</td><td>No — nothing reaches out</td></tr>
+    <tr><td>Typical build time</td><td>Under a day</td><td>Days</td><td>A week or more</td></tr>
+    <tr><td>Availability</td><td>Now</td><td>Announced</td><td>Since July 2026</td></tr>
+  </table></div>
+
+  <h3>Entitlement tiers</h3>
+  <p class="note">Cumulative — each tier includes everything below it. Gating is per asset, based on the support contract covering that asset, so one account can hold a mix.</p>
+  <div class="tbl"><table>
+    <tr><th>Module</th><th>All tiers</th><th>Basic</th><th>Standard</th><th>Signature</th></tr>
+    <tr><td>Assets</td><td>Inventory, tagging, EOL report, LDOS dashboard, file upload</td><td>Service coverage report</td><td>Peer benchmarking, Services EA summary, AI insights on inventory, EOL, coverage, LDOS, criticality</td><td>—</td></tr>
+    <tr><td>Assessments</td><td>Security advisory and field notice reports</td><td>—</td><td>Insights for advisories, hardening, configuration, quantum-safe, field notices, release conformance, cert expiry</td><td>Hardening recommendations, configuration deep insights and recommendations, quantum-safe deep insights</td></tr>
+    <tr><td>Support</td><td>—</td><td>Case management, self-serve troubleshooting</td><td>Device-level self-serve troubleshooting</td><td>Service Review report</td></tr>
+    <tr><td>Resilient Infrastructure</td><td>Playbook</td><td>—</td><td>IOS-XE software upgrades</td><td>—</td></tr>
+  </table></div>
+  <p class="note">Every insight-class capability needs a live telemetry connection. Contract-only assets appear in inventory but generate no insights.</p>
+
+  <h3>Data sources — what each one gives you</h3>
+  <div class="tbl"><table>
+    <tr><th>Source</th><th>Collector</th><th>First data</th><th>Refresh</th><th>Notes</th></tr>
+    <tr><td>IQ Link — direct</td><td>Yes</td><td>Your schedule</td><td>Your schedule</td><td>Deepest data. SNMP + SSH to devices</td></tr>
+    <tr><td>Catalyst Center</td><td>Via IQ Link</td><td>up to 75 min</td><td>Your schedule</td><td>20 non-cluster instances per Link</td></tr>
+    <tr><td>Intersight</td><td>No</td><td>~1 hour</td><td>Daily</td><td>Select accounts to connect</td></tr>
+    <tr><td>Meraki Dashboard</td><td>No</td><td>~1 hour</td><td>Daily</td><td>API key. Multi-org still maturing</td></tr>
+    <tr><td>Catalyst SD-WAN Manager</td><td>No</td><td>~1 hour</td><td>Hourly</td><td>v20.6+, Smart Account. SD-WAN Cloud unsupported</td></tr>
+    <tr><td>Webex Control Hub</td><td>No</td><td>~1 hour</td><td>Daily</td><td>Enabled by raising a support case</td></tr>
+    <tr><td>Service contract</td><td>No</td><td>~1 hour</td><td>Backend sync</td><td>Inventory only, no insights</td></tr>
+    <tr><td>CSV upload</td><td>No</td><td>Immediate</td><td>Manual</td><td>Replaces the previous upload wholesale</td></tr>
+    <tr><td>CSPC / CX Agent</td><td>Yes</td><td>—</td><td>—</td><td>Legacy, migrated accounts only, EoS pending</td></tr>
+  </table></div>
+
+  <h3>Virtual Appliance sizing</h3>
+  <div class="tbl"><table>
+    <tr><th>Resource</th><th>≤5K devices</th><th>≤20K devices</th><th>≤20K + GPU</th></tr>
+    <tr><td>vCPU</td><td>48</td><td>64</td><td>128</td></tr>
+    <tr><td>RAM</td><td>96 GB</td><td>128 GB</td><td>256 GB</td></tr>
+    <tr><td>Storage (SSD)</td><td>1.3 TB</td><td>1.3 TB</td><td>2.6 TB</td></tr>
+    <tr><td>VMs</td><td>1</td><td>1</td><td>2, split evenly</td></tr>
+    <tr><td>Collection schedule</td><td>24 h or more</td><td>24 h or more</td><td>24 h or more</td></tr>
+  </table></div>
+  <p class="note">Hypervisors: ESXi 8.0+ deployed via vCenter (not directly to a host), Hyper-V on Server 2022/2025, KVM on RHEL 9.7+. Thick provisioning, SSD-backed, disk write above 70 MB/s. No DHCP. Install takes up to two hours. Validated GPU is the NVIDIA RTX Pro 6000 Blackwell Server Edition — H200, H100, H100 NVL and A100 are listed but unvalidated.</p>
+
+  <h3>Ports</h3>
+  <div class="tbl"><table>
+    <tr><th>Port</th><th>Protocol</th><th>Purpose</th><th>Where</th></tr>
+    <tr><td>22</td><td>TCP</td><td>Admin CLI and Cisco Support debugging</td><td>All nodes</td></tr>
+    <tr><td>443</td><td>TCP</td><td>Browser access and endpoint targets</td><td>All nodes</td></tr>
+    <tr><td>53, 123, 161</td><td>UDP</td><td>DNS, NTP, SNMP</td><td>All nodes</td></tr>
+    <tr><td>10250, 10256</td><td>TCP</td><td>Kubernetes between nodes</td><td>Multi-node</td></tr>
+    <tr><td>6443</td><td>TCP</td><td>Kubernetes API server</td><td>Management node only</td></tr>
+    <tr><td>179</td><td>TCP</td><td>BGP for the VXLAN control plane</td><td>Multi-node</td></tr>
+    <tr><td>4789</td><td>UDP</td><td>VXLAN data between nodes</td><td>Multi-node</td></tr>
+    <tr><td>500, 4500</td><td>UDP</td><td>IPSec IKE between nodes</td><td>Multi-node</td></tr>
+    <tr><td>all</td><td>ESP (50)</td><td>IPSec ESP between nodes</td><td>Multi-node</td></tr>
+  </table></div>
+
+  <h3>Password and lockout policy on the on-prem components</h3>
+  <div class="tbl"><table>
+    <tr><th>Setting</th><th>Default</th><th>Range</th></tr>
+    <tr><td>Max login attempts</td><td>3</td><td>0–10</td></tr>
+    <tr><td>Rolling window</td><td>15 minutes</td><td>0–60 min</td></tr>
+    <tr><td>Lockout duration</td><td>30 minutes</td><td>0–60 min</td></tr>
+    <tr><td>Password expiry</td><td>60 days</td><td>0 disables</td></tr>
+    <tr><td>Reuse restriction</td><td>Last 5 passwords</td><td>—</td></tr>
+    <tr><td>Character change</td><td>8 characters must differ</td><td>—</td></tr>
+    <tr><td>Minimum change interval</td><td>24 hours</td><td>configurable</td></tr>
+    <tr><td>Security questions</td><td>5 set, 3 asked at reset</td><td>—</td></tr>
+    <tr><td>Activation code validity</td><td>48 hours, single use</td><td>—</td></tr>
+  </table></div>
+
+  <h3>Quick answers</h3>
+  <div class="qa"><b>Do I have to install a collector?</b><span>No. Contract data alone builds an inventory. But without telemetry most assessments and all AI insights either degrade or don't run.</span></div>
+  <div class="qa"><b>Can I change my data storage region later?</b><span>No. It's fixed at account creation. Changing it means a new company account from scratch.</span></div>
+  <div class="qa"><b>Can I migrate from CX Cloud after creating an IQ account?</b><span>No. Create fresh instead of migrating and that door closes permanently.</span></div>
+  <div class="qa"><b>Are the security assessments AI-generated?</b><span>No. Hardening, configuration and conformance checks are deterministic rule matching. The LLM only summarises and prioritises the results.</span></div>
+  <div class="qa"><b>Does my data leave my region?</b><span>In the US, no. In EMEA and APJC, a subset — the CLI data the models need — goes to the US for inferencing. This usually decides the deployment mode for regulated customers.</span></div>
+  <div class="qa"><b>Can I run an assessment on demand?</b><span>Not today. Rules evaluate during telemetry processing. Ad-hoc runs are tentatively 2HFY27.</span></div>
+  <div class="qa"><b>Does multi-node give me high availability?</b><span>No. It gives scale and GPU capacity. Lose the primary management node and cluster operations are impacted.</span></div>
+  <div class="qa"><b>Can partners get in?</b><span>Only through an early field trial today, inside the customer's account. Dedicated partner roles with per-partner data masking are FY27.</span></div>
+
+  <h3>Glossary</h3>
+  <dl class="gloss">
+    <div><dt>CCO ID</dt><dd>Cisco Connection Online account — your cisco.com login. Everything keys off it, including which cases you can see</dd></div>
+    <div><dt>IQ Link</dt><dd>The on-prem VM that discovers devices, collects telemetry and holds the secure channel to Cisco</dd></div>
+    <div><dt>IQ Connector</dt><dd>The collection engine running inside IQ Link. Not a separate product</dd></div>
+    <div><dt>VA</dt><dd>Virtual Appliance — the whole platform packaged to run on your own hypervisor</dd></div>
+    <div><dt>LDOS</dt><dd>Last Date of Support — after which Cisco will not support the hardware at all</dd></div>
+    <div><dt>EOL / EOS</dt><dd>End of Life and End of Sale — earlier milestones on the same lifecycle</dd></div>
+    <div><dt>PSIRT</dt><dd>Cisco's Product Security Incident Response Team — the source of security advisories</dd></div>
+    <div><dt>Field notice</dt><dd>A non-security product issue Cisco publishes, e.g. a hardware defect or firmware problem</dd></div>
+    <div><dt>RMA</dt><dd>Return Material Authorization — a hardware replacement tied to a TAC case</dd></div>
+    <div><dt>SCM</dt><dd>Support Case Manager — where cases are actually opened. IQ cross-launches to it</dd></div>
+    <div><dt>CSPC</dt><dd>Common Services Platform Collector — the legacy collector IQ Link replaces</dd></div>
+    <div><dt>SNTC</dt><dd>Smart Net Total Care — the older service platform. No direct migration path to IQ</dd></div>
+    <div><dt>RIS</dt><dd>Resilient Infrastructure Services — exposure assessment, modernisation and defence resiliency</dd></div>
+    <div><dt>CNSA 2.0</dt><dd>The NSA's Commercial National Security Algorithm suite — the quantum-safe benchmark</dd></div>
+    <div><dt>RADKit</dt><dd>Cisco's remote diagnostics toolkit, whose functionality is built into IQ Link</dd></div>
+    <div><dt>SysOrch IP</dt><dd>System Orchestration address — an internal /32 the appliance's pods use to reach the VM</dd></div>
+    <div><dt>APISIX</dt><dd>The API gateway inside IQ Link and the appliance. It fronts the SAML login routes</dd></div>
+    <div><dt>MACD</dt><dd>Move, Add, Change, Delete — asset-management operations, on the FY27 roadmap</dd></div>
+  </dl>
+
+  <h3>Known issues in the August 2026 release</h3>
+  <ul style="font-size:14px;padding-left:19px">
+    <li>Field notice affected-asset counts can read higher on the list than on the detail page. The detail page is correct.</li>
+    <li>Findings by Asset can show duplicates, and an asset can read "0 affecting" in the list while its detail view shows live advisories.</li>
+    <li>Security Hardening and Configuration sections on the Assessments overview intermittently vanish. Refreshing restores them.</li>
+    <li>An asset summary can show a field notice that the asset's own field notice page then reports as none detected.</li>
+    <li>Asking the AI Assistant for an exportable device list affected by a specific vulnerability can hang indefinitely.</li>
+  </ul>
+  <p class="note">Recently fixed: Intersight, Webex and Meraki first collection dropped from 24 hours to about one hour; quantum-safe assessments now return hardware refresh recommendations and correct metadata; the service-contract add error is resolved.</p>
+
+  <h3>Lineage and neighbours</h3>
+  <p class="note" style="font-size:14.5px;color:var(--ink)">Cisco IQ succeeds <b>CX Cloud</b>. CX Cloud telemetry updates ceased for most customers on 14 August 2026 — the first stage of full end-of-availability — while partners retained access longer during transition. Migration is one-way, one account at a time, and carries users, groups, contracts and cloud data sources. There is <b>no direct migration from SNTC</b>. CSPC and CX Agent survive only inside migrated accounts and are pending end-of-support.</p>
+  <p class="note" style="font-size:14.5px;color:var(--ink)"><b>Cisco Cloud Control</b> is the real-time operations console for the ops team. Cisco IQ is the lifecycle and advisory layer for the wider IT organisation. <b>AI Canvas</b> surfaces through Cloud Control, not IQ. IQ does not replace product dashboards like Nexus Dashboard or Intersight — it reads from them.</p>
+
+  <h3>Roadmap — announced, not shipping</h3>
+  <div class="tbl"><table>
+    <tr><th>Capability</th><th>Timing</th></tr>
+    <tr><td>Dedicated partner roles with per-partner data masking</td><td>FY27</td></tr>
+    <tr><td>Third-party / multivendor device support</td><td>FY27</td></tr>
+    <tr><td>Full programmatic export APIs (beta today)</td><td>FY27</td></tr>
+    <tr><td>Professional Services modules in IQ</td><td>FY27</td></tr>
+    <tr><td>Cisco U. learning inside IQ</td><td>FY27</td></tr>
+    <tr><td>CMDB reconciliation and MACD operations</td><td>FY27</td></tr>
+    <tr><td>Distributor access</td><td>FY27</td></tr>
+    <tr><td>On-demand assessment runs from the UI</td><td>tentatively 2HFY27</td></tr>
+    <tr><td>Custom customer-defined compliance rules</td><td>no date</td></tr>
+    <tr><td>Mobile app</td><td>under evaluation</td></tr>
+  </table></div>
+
+  <h3>Source material</h3>
+  <ul style="font-size:13.5px;padding-left:19px">
+    <li>Cisco IQ Getting Started Guide (CX225778) and FAQ (CX225779), both updated 25 Aug 2026</li>
+    <li>Cisco IQ release notes, April through August 2026</li>
+    <li>Cisco IQ Link Operations Guide v1.2.0 (CX226190) and Getting Started Guide (CX225764)</li>
+    <li>Cisco IQ Virtual Appliance Getting Started Guide (CX226192, GA revision 20 Aug 2026) and Operations Guide v1.2.4</li>
+    <li>Cisco Community video library: Getting Started (7), Fundamentals (10), Assets (5), Assessments (6), Support (5), plus IQ Link and Resilient Infrastructure deep dives and the July and August 2026 Expert Insights recordings</li>
+    <li>Partner Summit launch announcement, 4 November 2025</li>
+  </ul>
+
+</div>
+</section>
+
+<p class="foot">Reflects Cisco documentation published to late August 2026. Cisco IQ ships monthly — verify sizing, ports and roadmap against current release notes before committing them to a design.</p>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+var R="required",RC="recommended",O="optional",NA="na";
+
+var MODES=[
+ {id:"saas",hue:"var(--m-saas)",name:"SaaS",forWho:"Cloud-first, fastest to value, no appliance to run.",
+  facts:["AI in Cisco cloud","no GPU","auto updates"],hub:"You are building: Cisco IQ SaaS",
+  sub:"16 steps across 5 phases. Typically under a day of hands-on work, plus waiting for the first collection."},
+ {id:"tethered",hue:"var(--m-teth)",name:"On-prem tethered",forWho:"Data must stay on your premises, but you still want updates delivered automatically.",
+  facts:["your data centre","auto updates","AI in Cisco cloud"],hub:"You are building: on-prem tethered",
+  sub:"15 steps across 5 phases. Days, mostly waiting on change control and the two-hour install."},
+ {id:"airgap",hue:"var(--m-air)",name:"On-prem air-gapped",forWho:"Regulated or sovereign environments. Nothing leaves the enclave, ever.",
+  facts:["fully isolated","GPU for AI","manual updates"],hub:"You are building: on-prem air-gapped",
+  sub:"18 steps across 6 phases. A week or more — the download, the design review and the two-hour install all serialise."}
+];
+
+var BRANCHES=[
+{id:"account",title:"Account and entitlement",hue:"var(--estate)",items:[
+ {n:"Cisco.com (CCO) account",s:{saas:R,tethered:R,airgap:R},p:"An individual login. Determines which contracts and cases you can see.",w:"Whoever creates the company account becomes Account Administrator. Cisco cannot do it for you, and cannot pick the right person."},
+ {n:"Cisco IQ company account",s:{saas:R,tethered:R,airgap:R},p:"Created self-service at iq.cisco.com.",w:"Even air-gapped needs one — it's where installers, modules and rule packs come from, and where you raise support cases."},
+ {n:"Data storage region",s:{saas:R,tethered:NA,airgap:NA},p:"Chosen once at account creation. Three regions available.",w:"Immutable. Changing it means a new account. Decide before anyone clicks Create."},
+ {n:"Service contract",s:{saas:R,tethered:R,airgap:R},p:"At least one Cisco Support contract, entitled to your CCO profile.",w:"Also the cheapest route to inventory — contract data alone populates assets with no telemetry at all."},
+ {n:"CX Cloud migration",s:{saas:O,tethered:O,airgap:O},p:"Carries users, groups, contracts and cloud data sources across.",w:"One-way, one account at a time. Create fresh instead and you can never migrate later."}
+]},
+{id:"collect",title:"Getting device data in",hue:"var(--collect)",items:[
+ {n:"Cisco IQ Link",s:{saas:RC,tethered:RC,airgap:NA},p:"On-prem VM. Discovers devices, collects telemetry, holds the secure channel to Cisco.",w:"Optional on paper, essential in practice — without it most assessments and all AI insights don't run. Air-gapped doesn't need it: the appliance carries the same collection stack."},
+ {n:"Credential sets",s:{saas:R,tethered:R,airgap:R},p:"SNMP v1/v2c/v3 and SSH for discovery; HTTP/HTTPS for Catalyst Center.",w:"Bound to IP ranges, matched by specificity — exact IP beats 1.2.3.* beats 1.2.*.*. Trailing wildcards only."},
+ {n:"Catalyst Center connection",s:{saas:O,tethered:O,airgap:O},p:"Reads inventory from a controller you already run rather than polling devices.",w:"Up to 20 non-cluster Catalyst Centers per IQ Link instance. Registration can take 75 minutes."},
+ {n:"Cloud connectors",s:{saas:O,tethered:O,airgap:NA},p:"Intersight, Meraki, Catalyst SD-WAN Manager, Webex Control Hub. Cloud-to-cloud, no collector.",w:"Nothing reaches out from an air-gapped enclave, so these are unavailable there. SD-WAN Cloud is unsupported in every mode."},
+ {n:"CSV upload",s:{saas:O,tethered:O,airgap:O},p:"Serial numbers in, validated assets out. Hostname, version and location optional.",w:"Each upload replaces the last one completely. There is no merge or append."},
+ {n:"Collection schedule",s:{saas:R,tethered:R,airgap:R},p:"Separate schedules for discovery and inventory collection.",w:"A default schedule ships enabled. Retune it to your maintenance window before it surprises anyone."},
+ {n:"Legacy CSPC / CX Agent",s:{saas:O,tethered:NA,airgap:NA},p:"Only available inside accounts migrated from CX Cloud.",w:"End-of-support is pending. A bridge, not a destination."}
+]},
+{id:"compute",title:"Compute you provide",hue:"var(--onprem)",items:[
+ {n:"Hypervisor for IQ Link",s:{saas:RC,tethered:RC,airgap:NA},p:"ESXi, Hyper-V or KVM. OVA or VHD, 10–25 GB download.",w:"Check disk space before starting the download."},
+ {n:"Virtual Appliance VM",s:{saas:NA,tethered:R,airgap:R},p:"The whole platform on your kit. 48 vCPU / 96 GB / 1.3 TB for 5K devices; 64 / 128 / 1.3 TB for 20K.",w:"ESXi must deploy via vCenter, not straight to a host. Thick provisioning, SSD, write above 70 MB/s. Install takes up to two hours."},
+ {n:"GPU node",s:{saas:NA,tethered:NA,airgap:RC},p:"A second VM with a GPU, joined as a supplemental node. Runs AI locally.",w:"Validated only on NVIDIA RTX Pro 6000 Blackwell Server Edition. Skip it and everything else still works — the cluster degrades gracefully."},
+ {n:"Multi-node cluster",s:{saas:NA,tethered:O,airgap:O},p:"Horizontal scale, and the only way to attach a GPU.",w:"Scale, not high availability. Lose the primary management node and cluster operations are impacted."}
+]},
+{id:"network",title:"Network, identity and hardening",hue:"var(--estate)",items:[
+ {n:"IP addressing",s:{saas:O,tethered:R,airgap:R},p:"Three addresses for the appliance: VM access IP, SysOrch /32, Kubernetes pod /20.",w:"No DHCP. The pod range must not overlap the VM IP, gateway, DNS or NTP."},
+ {n:"DNS and NTP",s:{saas:O,tethered:R,airgap:R},p:"An A record plus matching PTR, and at least one NTP server.",w:"NTP can be plain, key-based or NTS. Clock skew is a common cause of SAML assertion failures."},
+ {n:"Firewall rules",s:{saas:R,tethered:R,airgap:R},p:"22/tcp, 443/tcp and 53 · 123 · 161 udp as a baseline.",w:"Multi-node adds Kubernetes, BGP, VXLAN, IKE and ESP. Get these into the change request up front."},
+ {n:"SAML identity provider",s:{saas:O,tethered:O,airgap:O},p:"Okta, ADFS or Entra ID for the on-prem components, with optional certificate-based auth.",w:"Entra ID needs App Roles, not group claims. ADFS certificate auth needs SChannel registry changes and a reboot."},
+ {n:"Custom SSL certificate",s:{saas:NA,tethered:O,airgap:O},p:"Replaces the pre-installed self-signed cert on the on-prem UI.",w:"Needs at least 90 days validity remaining, with cert and private key in one PEM text file."},
+ {n:"Syslog and SCP server",s:{saas:NA,tethered:RC,airgap:RC},p:"Up to two syslog targets; an SCP server for importing upgrade bundles.",w:"The SCP server is a prerequisite for upgrades, so stand it up early. Syslog targets must be IPs, not FQDNs."}
+]},
+{id:"cisco",title:"What Cisco runs for you",hue:"var(--cloud)",items:[
+ {n:"Platform modules",s:{saas:R,tethered:R,airgap:R},p:"Assets, Assessments, Support and the AI Assistant.",w:"Air-gapped ships with Assets pre-installed; everything else is added from Package Catalog."},
+ {n:"Deterministic rule engine",s:{saas:R,tethered:R,airgap:R},p:"Evaluates hardening, configuration, conformance, quantum-safe and certificate rules.",w:"Not an LLM. Rules run during telemetry processing — no run-now button until 2HFY27."},
+ {n:"Rule and module packages",s:{saas:NA,tethered:O,airgap:R},p:"Versioned packages downloaded from Package Catalog.",w:"Air-gapped: advisory freshness becomes a process you own. Without a cadence your assessments quietly go stale."},
+ {n:"LLM inference — Cisco cloud",s:{saas:R,tethered:R,airgap:NA},p:"Summarisation, insights, reports and conversational query, centralised in Cisco's RTP data centre.",w:"US data stays in region. EMEA and APJC send a CLI-data subset to the US. Usually the deciding question for regulated customers."},
+ {n:"Automatic update delivery",s:{saas:R,tethered:R,airgap:NA},p:"Features, patches and content arrive without intervention.",w:"Tethered keeps this; air-gapped trades it away entirely."},
+ {n:"Peer Benchmarks",s:{saas:O,tethered:NA,airgap:NA},p:"Anonymised comparison against other IQ customers by segment and vertical.",w:"SaaS-only by design — it needs the shared cloud dataset to compute against."}
+]},
+{id:"people",title:"People and access",hue:"var(--ai)",items:[
+ {n:"Account Administrator",s:{saas:R,tethered:R,airgap:R},p:"Full control: system settings, data connectors, contracts, users.",w:"The first person to create the account gets this role. Choose deliberately."},
+ {n:"Users and user groups",s:{saas:R,tethered:R,airgap:R},p:"Roles applied to individuals or in bulk through groups.",w:"On-prem components have only two roles — Viewer and Administrator. The SaaS platform is richer."},
+ {n:"Resource groups",s:{saas:O,tethered:O,airgap:O},p:"Scope a role to a defined subset of assets.",w:"How you let a region or business unit see only its own estate. Assign none and the role sees everything."},
+ {n:"Asset tags",s:{saas:O,tethered:O,airgap:O},p:"Free-form key:value labels — Environment:Prod, Site:SG1.",w:"Doubles as a filter across dashboards and exports. Agree a convention before people invent their own."},
+ {n:"Partner access",s:{saas:O,tethered:NA,airgap:NA},p:"Invite a registered partner into your account with controlled visibility.",w:"Early field trial only. Proper partner roles with data masking land in FY27."}
+]}];
+
+var LLD={
+saas:[
+{p:"Phase 0",t:"Prerequisites — before anyone logs in",hue:"var(--estate)",steps:[
+ {t:"Confirm entitlement and contract type",meta:"Cisco entitlement systems · hours to days",
+  where:"Outside the platform entirely. This is Cisco's entitlement layer, and it gates everything downstream.",
+  needs:["A CCO ID for the person who will own the account","The contract numbers used to open support cases"],
+  actions:["Confirm each contract is a <b>Cisco Support</b> contract, not a partner contract.","Confirm the contract is held by your company, not a reseller.","Confirm the CCO profile is explicitly entitled to those contracts."],
+  kv:[["Contract type","Cisco Support only"],["Entitlement check","cisco.com profile"],["Fixing entitlement","Customer Service Hub case"]],
+  verify:"The contract appears against the CCO profile. If it doesn't, raise a Customer Service Hub case now — this can take days and blocks the whole build.",
+  gates:"Account creation, contract attachment, and every asset that would come with it."},
+ {t:"Nominate the account owner and lock the data region",meta:"Governance decision · minutes to decide",
+  where:"A decision, not a configuration. It becomes permanent the moment someone clicks Create.",
+  needs:["A named person who will hold Account Administrator","An agreed data storage region"],
+  actions:["Pick the owner deliberately — the first person to create the account becomes Account Administrator and Cisco cannot reassign it for you.","Choose the data storage region against your residency obligations.","If you are in EMEA or APJC, note now that AI inference sends a CLI-data subset to the US. If that is unacceptable, stop and reconsider the deployment mode."],
+  kv:[["Regions available","3"],["Region changeable later","No"],["Owner reassignable","Not by Cisco"]],
+  verify:"Owner and region written down and signed off by whoever owns data governance.",
+  gates:"Step 3, permanently. Getting this wrong means rebuilding the account from scratch.",
+  warn:"This is the single most common rework trigger. The region cannot be changed, and an account created without migrating CX Cloud can never migrate afterwards."}
+]},
+{p:"Phase 1",t:"Platform foundation",hue:"var(--cloud)",steps:[
+ {t:"Create the Cisco IQ account, or migrate CX Cloud",meta:"iq.cisco.com · minutes",
+  where:"Cisco cloud. Nothing on your infrastructure yet.",
+  needs:["CCO credentials","Company account name","Data storage region from step 2"],
+  actions:["Go to <code>iq.cisco.com</code> and choose <b>Create an account</b>.","Enter CCO credentials and verify.","<b>If migrating:</b> select the CX Cloud account to migrate from. The region auto-populates from the old account and cannot be changed here.","<b>If creating fresh:</b> name the account and select the region.","Click <b>Create account</b>, or <b>Create account and migrate data</b>."],
+  kv:[["URL","iq.cisco.com"],["Migration carries","users, groups, contracts, cloud sources"],["Migration excludes","partner users and groups"],["Concurrent migrations","one at a time"]],
+  verify:"You land on the Launchpad. If migrating, Migration Status reads Completed rather than Unable to Migrate.",
+  gates:"Contracts, connectors, users — everything."},
+ {t:"Attach service contracts",meta:"System Settings → Service Contracts · ~1 hour to populate",
+  where:"Cisco cloud. Builds your baseline inventory before any telemetry exists.",
+  needs:["Contract numbers you are entitled to"],
+  actions:["Go to <b>System Settings → Service Contracts → Add contract</b>.","Enter the first contract number.","Once one is added, subsequent contracts appear as a selectable list rather than needing manual entry."],
+  kv:[["First data","~1 hour"],["Large contracts","longer for tens of thousands of devices"],["Support module","reads contracts near real-time"],["Assets module","populates on next backend sync"]],
+  verify:"Assets → Inventory shows devices. Clear the default <code>Equipment Type = CHASSIS</code> filter to see the full list.",
+  gates:"CSV file upload requires at least one contract already attached.",
+  warn:"The Support module will show the contract as added while Assets is still empty. That is expected, not a fault."}
+]},
+{p:"Phase 2",t:"Data plane — cheapest coverage first",hue:"var(--collect)",steps:[
+ {t:"Connect the cloud controllers you already run",meta:"System Settings → Data Connectors · ~1 hour",
+  where:"Cloud to cloud. Zero on-prem footprint, so do this before deploying anything.",
+  needs:["Admin on the relevant Smart Account or Virtual Account","Meraki API key if applicable"],
+  actions:["<b>Intersight:</b> Connect, tick the accounts, Connect accounts.","<b>Meraki:</b> Connect, enter the API key.","<b>Catalyst SD-WAN Manager:</b> first enable Data Collection in SD-WAN Manager under Administration → Settings, then tick the organisations in IQ.","<b>Webex Control Hub:</b> click Open case — this one is not self-service."],
+  kv:[["SD-WAN Manager min version","v20.6"],["SD-WAN refresh","hourly"],["Others refresh","daily"],["SD-WAN Cloud","not supported"],["Removing a connection","requires a support case"]],
+  verify:"Data Connectors shows each connector with its connected accounts, and inventory grows within the hour.",
+  gates:"Nothing — but doing it first tells you how much estate is left for IQ Link to cover, which may change your sizing."},
+ {t:"Deploy Cisco IQ Link",meta:"On-prem VM · 10–25 GB download",
+  where:"Inside your network, with routable reach to target devices or Catalyst Center, and outbound HTTPS to Cisco.",
+  needs:["A hypervisor with capacity","IP, gateway, DNS, NTP","Outbound connectivity to Cisco"],
+  actions:["In IQ: <b>System Settings → Data Connectors → Add Cisco IQ Link</b>.","Select hypervisor and version, then Download.","Deploy the OVA or VHD on ESXi, Hyper-V or KVM.","Configure network settings from the VM console.","Set the admin password during install — you'll need it every time after."],
+  kv:[["Hypervisors","ESXi · Hyper-V · KVM"],["Package size","10–25 GB"],["Default username","admin"],["Default account context","Default-Customer"],["Instances per account","unlimited"],["Catalyst Centers per Link","20 non-cluster"]],
+  verify:"The Link registers and appears under Data Connectors in the SaaS UI with its instance name.",
+  gates:"Credential sets, device connections, and every AI insight that depends on telemetry."},
+ {t:"Harden Cisco IQ Link before anyone else touches it",meta:"IQ Link → System Settings · under an hour",
+  where:"On the Link VM itself. Its admin surface is separate from the SaaS platform.",
+  needs:["SSL certificate and key in one PEM text file","IdP metadata if using SSO","Syslog target IPs","SCP server details"],
+  actions:["<b>SSL:</b> System Configuration → SSL Certificates → upload a .txt containing both cert and key, then enable.","<b>SSO:</b> System Configuration → Identity Providers → upload IdP metadata → map roles. One IdP at a time.","<b>Syslog:</b> add up to two servers, IP address only.","<b>SCP:</b> configure the server now — it is a prerequisite for importing upgrade bundles later.","<b>Banners:</b> configure the mandatory login modal if your policy requires acknowledgement.","Set security questions on the admin account so password reset works."],
+  kv:[["SSL validity required","90+ days remaining"],["IdPs supported","Okta · ADFS · Entra ID"],["IdP roles","General Account Administrator, General Account Viewer"],["Syslog servers","max 2, IP not FQDN"],["Password expiry","60 days"],["Lockout","3 attempts / 15 min → 30 min"]],
+  verify:"You can log in over SSO, the cert shows as active, and a test event reaches syslog.",
+  gates:"Nothing technically, but doing it after operators are onboarded means re-enrolling everyone.",
+  warn:"Entra ID must use App Roles rather than group claims — group IDs arrive as UUIDs and will not map. IdP status reads Incomplete until role mapping is done; that is expected."},
+ {t:"Build credential sets",meta:"IQ Link → Connection Management → Credentials · 30 min",
+  where:"On the Link. These are what it uses to authenticate into your devices.",
+  needs:["SNMP community strings or v3 credentials","SSH credentials","HTTP/HTTPS credentials if connecting Catalyst Center"],
+  actions:["Add credentials, name them by zone or site — e.g. <code>SG-DC-SNMPv3</code>.","Tick the protocols this set covers.","Enter the login details per protocol.","Define <b>Included IPs</b> — the ranges where this set applies."],
+  kv:[["Discovery needs","SNMPv2c or v3, plus SSH"],["Catalyst Center needs","HTTP/HTTPS"],["Match precedence","exact IP > 1.2.3.* > 1.2.*.* > *.*.*.*"],["Valid wildcards","trailing only"],["Rejected","*.1.2.3 · 10.10.*.20 · dashes"]],
+  verify:"Each credential set lists its included IPs on the Credentials tab.",
+  gates:"Device discovery. Without a matching credential set, a device is unreachable regardless of connectivity.",
+  warn:"Centralise by zone rather than per device. When a password rotates you update one set, and every device it covers picks it up."},
+ {t:"Add device connections",meta:"IQ Link → Connection Management · up to 75 min to register",
+  where:"On the Link. Two paths, and you can use both.",
+  needs:["Catalyst Center IP or FQDN, and an HTTP/HTTPS credential","Or a device list — file upload or comma-separated hostnames and IPs"],
+  actions:["<b>Catalyst Center:</b> Connection Management → Catalyst Center → enter IP or FQDN → select the HTTP credential → Submit.","<b>Direct:</b> Connection Management → Direct Connection → upload a file or paste hostnames and IPs → Submit."],
+  kv:[["Catalyst Centers per Link","20 non-cluster"],["Registration time","up to 75 minutes"],["Direct entry","file or comma-separated list"]],
+  verify:"The connection appears under Configured Connections, and assets appear on the Link's Assets tab.",
+  gates:"Collection scheduling has nothing to run against until this is done."},
+ {t:"Set discovery and collection schedules",meta:"IQ Link → Connection Management → Scheduling · 10 min",
+  where:"On the Link. This is what actually determines how fresh your data is.",
+  needs:["Your agreed maintenance window"],
+  actions:["Edit <b>Schedule Discovery</b> — frequency, day, start time.","Edit <b>Schedule Inventory Collection</b> — frequency and start time.","Align both to the maintenance window."],
+  kv:[["Default schedule","ships enabled"],["Sync delay","5–10 minutes"],["Recommended","align to maintenance window"]],
+  verify:"The schedule shows your values after the sync delay, and the first collection completes.",
+  gates:"Assessments produce nothing until a collection has run.",
+  warn:"A default schedule is already running when the Link comes up. If nobody retunes it, collection can land in the middle of a business day."},
+ {t:"Close the gaps with CSV upload",meta:"System Settings → File Upload · immediate",
+  where:"Cisco cloud. For anything neither telemetry nor contracts reached.",
+  needs:["At least one contract already attached","Serial numbers for the missing assets"],
+  actions:["System Settings → File Upload → Upload File → <b>Download template</b>.","Fill the <code>serial_number</code> column. Hostname, software version and location are optional.","Upload."],
+  kv:[["Required column","serial_number"],["Optional","hostname · software_version · location"],["Validation","against Cisco records and account scope"],["Upload behaviour","replaces previous upload entirely"]],
+  verify:"Assets → Inventory shows the new devices under a Customer Upload data source.",
+  gates:"Nothing downstream.",
+  warn:"There is no merge. Keep the master CSV somewhere durable, because each upload wipes the last."}
+]},
+{p:"Phase 3",t:"Access and governance",hue:"var(--ai)",steps:[
+ {t:"Create resource groups, then user groups, then users",meta:"System Settings → Identity & Access · 30 min",
+  where:"Cisco cloud. Order matters — build the containers before the people.",
+  needs:["Your access model: who should see which assets","Email addresses tied to CCO IDs"],
+  actions:["<b>Resource groups first:</b> create a group, click Manage assets, tick the assets, save. This is how you scope a role to a region or business unit.","<b>User groups next:</b> create the group, assign users, pick the role, and optionally bind a resource group.","<b>Users last:</b> Add User, enter the email, pick user groups and role, leave Send invitation email ticked."],
+  kv:[["Default group","All account users — cannot be deleted"],["Users must have","at least one group with a role, or a direct role"],["No resource group bound","role sees every relevant asset"],["User status","Pending until first login"]],
+  verify:"Invited users receive the welcome email from <code>CiscoIQ-team@path.cisco.com</code> and flip to Active after logging in.",
+  gates:"Nothing, but retrofitting scoping after people are already in is painful.",
+  warn:"Resource group restriction is opt-in. Assign a role without one and it sees everything in the account."},
+ {t:"Agree the tag schema",meta:"System Settings → Tags · 15 min",
+  where:"Cisco cloud. Cheap to set up, expensive to retrofit.",
+  needs:["An agreed naming convention"],
+  actions:["Create tags as <code>key:value</code> — for example <code>Environment:Prod</code>, <code>Site:SG1</code>, <code>Owner:NetOps</code>.","Assign users to a resource group so they can apply tags to devices."],
+  kv:[["Format","key:value"],["Assignable by","users in a resource group"],["Usable as","filters across dashboards and exports"]],
+  verify:"Tags appear in the filter list on the Inventory page.",
+  gates:"Nothing, but tags are the main way you slice reporting later."},
+ {t:"Decide on Accelerated Support Access",meta:"Data Connectors → per Link instance · security review",
+  where:"On each IQ Link instance, configured from the SaaS UI.",
+  needs:["A security review sign-off, especially in a regulated environment"],
+  actions:["Data Connectors → select the Link instance → More Options → <b>Accelerated Support Access</b>.","Toggle <b>Rapid Resolution via Cisco IQ Link</b> — auto-collects diagnostics on case open and lets the AI Assistant run show commands.","Toggle <b>TAC Remote Access</b> — lets an assigned TAC engineer run show commands remotely."],
+  kv:[["Requires","IQ Link v1.2.0"],["Scope","read-only show commands"],["Device changes","none"],["Model training","not used"],["Catalyst Center-discovered devices","not covered yet"],["Availability","SaaS only"]],
+  verify:"Toggles reflect your choice. Changes take effect immediately.",
+  gates:"Nothing. Both are optional — but they are the difference between a fast case and a week of back-and-forth."}
+]},
+{p:"Phase 4",t:"Validate and operate",hue:"var(--onprem)",steps:[
+ {t:"Validate the deployment",meta:"After the first collection completes · 1 hour",
+  where:"Across the whole platform. Do not sign off before a collection has actually run.",
+  needs:["At least one completed collection cycle"],
+  actions:["<b>Assets → Inventory:</b> clear the CHASSIS filter and confirm the count matches expectation.","<b>Resilient Infrastructure Playbook → Step 1:</b> check the telemetry coverage percentage. This is your honest coverage number.","<b>Assessments → Overview:</b> confirm findings are generating across advisories, hardening and configuration.","<b>AI Assistant:</b> run a prompt such as summarising assets past LDOS, then Analyze response and save the report.","<b>Support:</b> confirm cases and RMAs are visible."],
+  kv:[["Coverage metric","Playbook step 1, telemetry pie chart"],["Insight prerequisite","Standard tier + telemetry"],["Export default filter","Equipment Type = CHASSIS"]],
+  verify:"Telemetry coverage is where you expect it, assessments are populated, and a saved report exists.",
+  gates:"Handover. If coverage is low, the gap is almost always credential mismatch or a device outside every Included IP range."},
+ {t:"Set the steady-state operating rhythm",meta:"Ongoing · monthly",
+  where:"Operations. The build is done; this is what keeps it honest.",
+  needs:["A named owner for the platform"],
+  actions:["Configure the IQ Link auto-upgrade schedule and maintenance window under Data Connectors → Edit maintenance.","Set a monthly review of the Cisco IQ release notes — the platform ships monthly and known issues change.","Schedule a periodic re-check of telemetry coverage as the estate changes.","Plan the CSPC and CX Agent retirement if you migrated from CX Cloud."],
+  kv:[["Upgrade grace, non-reboot","2 weeks"],["Upgrade grace, reboot","4 weeks"],["Auto retries on failure","2, then manual"],["Release cadence","monthly"]],
+  verify:"A named owner, a maintenance window on the calendar, and a monthly release-note review booked.",
+  gates:"Nothing — this is the end state."}
+]}],
+
+tethered:[
+{p:"Phase 0",t:"Prerequisites",hue:"var(--estate)",steps:[
+ {t:"Confirm entitlement and contract type",meta:"Cisco entitlement systems · hours to days",
+  where:"Cisco's entitlement layer, outside the platform.",
+  needs:["A CCO ID for the intended account owner","Contract numbers used to open cases"],
+  actions:["Confirm each contract is a Cisco Support contract, not a partner contract.","Confirm the CCO profile is entitled to them."],
+  kv:[["Contract type","Cisco Support only"],["Fixing entitlement","Customer Service Hub case"]],
+  verify:"Contracts visible against the CCO profile.",
+  gates:"Everything downstream."},
+ {t:"Nominate the account owner",meta:"Governance decision · minutes",
+  where:"A decision. The first account creator becomes Account Administrator permanently.",
+  needs:["A named owner"],
+  actions:["Pick the owner deliberately.","Confirm with data governance that on-prem hosting satisfies the residency requirement that drove this mode."],
+  kv:[["Owner reassignable","not by Cisco"]],
+  verify:"Owner agreed and documented.",
+  gates:"Account creation."}
+]},
+{p:"Phase 1",t:"Cloud foundation — yes, you still need it",hue:"var(--cloud)",steps:[
+ {t:"Create the Cisco IQ SaaS account",meta:"iq.cisco.com · minutes",
+  where:"Cisco cloud. Even though the platform will run on your kit, this is your supply line for software.",
+  needs:["CCO credentials","Company account name"],
+  actions:["Create the account at <code>iq.cisco.com</code>, or migrate an existing CX Cloud account."],
+  kv:[["Purpose","Package Catalog, support cases"],["Migration","one-way, one at a time"]],
+  verify:"You reach the Launchpad.",
+  gates:"Package downloads, support cases, and the update tether."},
+ {t:"Attach service contracts",meta:"System Settings → Service Contracts · ~1 hour",
+  where:"Cisco cloud. Establishes entitlement and gives you a baseline inventory to validate the appliance against later.",
+  needs:["Contract numbers"],
+  actions:["System Settings → Service Contracts → Add contract."],
+  kv:[["First data","~1 hour"]],
+  verify:"Assets → Inventory populates.",
+  gates:"Nothing directly, but it's your reference list when checking the appliance found everything."},
+ {t:"Download the appliance and modules",meta:"System Settings → Package Catalog · 20–25 GB",
+  where:"From the SaaS Package Catalog onto a staging machine.",
+  needs:["Disk space","Your target hypervisor decided"],
+  actions:["Package Catalog → Cisco IQ Virtual Appliance card → Download options.","Select hypervisor (ESXi, Hyper-V, KVM) and version.","Download the module installers you need alongside it."],
+  kv:[["Installer size","20–25 GB"],["Assets module","pre-installed in the installer"],["Other modules","downloaded separately"]],
+  verify:"Files downloaded and checksummed.",
+  gates:"Deployment."}
+]},
+{p:"Phase 2",t:"Design before you build",hue:"var(--onprem)",steps:[
+ {t:"Size the appliance",meta:"Design decision · 30 min",
+  where:"Your data centre capacity plan.",
+  needs:["Device count estimate"],
+  actions:["Under 5K devices: 48 vCPU, 96 GB RAM, 1.3 TB SSD.","Up to 20K devices: 64 vCPU, 128 GB RAM, 1.3 TB SSD.","Use thick provisioning on SSD-backed storage."],
+  kv:[["≤5K devices","48 vCPU · 96 GB · 1.3 TB"],["≤20K devices","64 vCPU · 128 GB · 1.3 TB"],["Disk write speed","> 70 MB/s"],["Provisioning","thick"]],
+  verify:"Capacity reserved and signed off.",
+  gates:"Deployment.",
+  warn:"Thin provisioning is possible but over-commitment causes service degradation and loss. Cisco is explicit about this."},
+ {t:"Reserve addressing and open ports",meta:"Network change request · days",
+  where:"Your network and firewall teams. Start this early — it is usually the long pole.",
+  needs:["Three IP addresses","DNS records","NTP servers","Firewall change window"],
+  actions:["Reserve a routable VM access IP.","Reserve the SysOrch <code>/32</code> — default <code>192.168.23.17</code>, change only on conflict.","Reserve the Kubernetes pod <code>/20</code> — default <code>100.64.0.0/20</code>. It must not overlap the VM IP, gateway, DNS or NTP.","Create a DNS A record and a matching PTR.","Raise the firewall change for the base ports, plus the tether path to Cisco."],
+  kv:[["VM access IP","routable IPv4"],["SysOrch","/32, default 192.168.23.17"],["Pod CIDR","/20, default 100.64.0.0/20"],["DNS","A record + PTR"],["Base ports","22 tcp · 443 tcp · 53/123/161 udp"],["DHCP","not supported"]],
+  verify:"Addresses reserved, DNS resolves forward and reverse, firewall rules staged.",
+  gates:"Network configuration on the appliance."}
+]},
+{p:"Phase 3",t:"Build the appliance",hue:"var(--onprem)",steps:[
+ {t:"Deploy on your hypervisor",meta:"Hypervisor · 1 hour",
+  where:"Your data centre.",
+  needs:["The installer package","Reserved capacity"],
+  actions:["<b>ESXi:</b> deploy the OVF through vCenter — not directly to a host. Set CPU shares Low and tick Reserve all guest memory.","<b>Hyper-V:</b> Generation 2, disable Secure Boot, leave Dynamic Memory unchecked, attach all three virtual hard disks with disk 1 first, enable device naming.","<b>KVM:</b> import the first disk, OS type AlmaLinux 9, add the other two disks, all buses SCSI, firmware UEFI."],
+  kv:[["ESXi","8.0+ via vCenter only"],["Hyper-V","Server 2022 / 2025, Gen 2"],["KVM","RHEL 9.7+, UEFI, SCSI"],["Disks","3, in order"]],
+  verify:"The VM powers on and you reach the console.",
+  gates:"Network configuration."},
+ {t:"Configure network from the console",meta:"VM console · 20 min",
+  where:"The appliance console, before any web interface exists.",
+  needs:["The reserved addresses","NTP details"],
+  actions:["Log in with <code>admin</code> / <code>admin</code>.","Choose option 1 to configure network settings.","Enter IP, gateway, DNS list, search domain and NTP server list.","Choose NTP authentication — none, key-based, or NTS.","Set and confirm the real admin password.","Review the summary and confirm."],
+  kv:[["Initial credentials","admin / admin"],["NTP auth options","none · key-based · NTS"],["Multiple NTP servers","comma-separated"]],
+  verify:"Success message, and you can SSH in on the new IP.",
+  gates:"Installation.",
+  warn:"Take a hypervisor snapshot at this point, before installing. It is the only clean rollback you get."},
+ {t:"Run the installer",meta:"https://FQDN/installer/welcome · up to 2 hours",
+  where:"The appliance web installer.",
+  needs:["The internal pod range from your design"],
+  actions:["Browse to <code>https://&lt;FQDN&gt;/installer/welcome</code>.","Choose Cisco IQ Virtual Appliance and Start.","Enter the Internal IP Range, confirming no overlap with VM IP, gateway, DNS or reachable networks.","Wait for all tasks to complete."],
+  kv:[["Duration","up to 2 hours"],["On completion","redirects to the login page"],["Pre-installed","Assets module"]],
+  verify:"The browser lands on the appliance login page and you can sign in.",
+  gates:"Modules, collection, everything."}
+]},
+{p:"Phase 4",t:"Populate and secure",hue:"var(--collect)",steps:[
+ {t:"Install modules and rules",meta:"System Settings → Package Management · 30 min",
+  where:"On the appliance.",
+  needs:["Module packages downloaded in step 5"],
+  actions:["System Settings → Package Management.","Install Assessments and any other modules.","Install the current rule packages."],
+  kv:[["Pre-installed","Assets"],["Added separately","Assessments and rules"]],
+  verify:"Modules appear in the navigation and rule versions show as current.",
+  gates:"Assessments produce nothing without their module and rules."},
+ {t:"Configure identity and hardening",meta:"System Settings → System Configuration · 1 hour",
+  where:"On the appliance. Same admin surface as IQ Link.",
+  needs:["SSL cert and key in one PEM file","IdP metadata","Syslog IPs","SCP server details"],
+  actions:["Upload and enable the custom SSL certificate.","Add the identity provider and complete role mapping.","Add up to two syslog servers.","Configure the SCP server — required for importing upgrade bundles.","Configure login banners if policy requires."],
+  kv:[["SSL validity","90+ days remaining"],["IdPs","Okta · ADFS · Entra ID"],["Roles","Administrator · Viewer"],["Syslog","max 2, IP only"]],
+  verify:"SSO login works end to end and the certificate shows active.",
+  gates:"Operator onboarding.",
+  warn:"For Entra ID use App Roles, not group claims. For ADFS certificate auth, non-self-signed certificates in the Trusted Root store will break client cert auth entirely — move them to Intermediate."},
+ {t:"Configure collection",meta:"System Settings → Connection Management · 1 hour",
+  where:"On the appliance, using the same connection-management stack as IQ Link.",
+  needs:["SNMP and SSH credentials","Catalyst Center details or a device list"],
+  actions:["Create credential sets and bind them to IP ranges.","Add Catalyst Center or direct device connections.","Set the discovery and inventory collection schedules to your maintenance window."],
+  kv:[["Match precedence","exact IP > trailing wildcards"],["Catalyst Centers","20 non-cluster per instance"],["Collection schedule","24 h or more"],["Schedule sync","5–10 min"]],
+  verify:"Assets appear and the first collection completes.",
+  gates:"Assessments and insights."}
+]},
+{p:"Phase 5",t:"Confirm and hand over",hue:"var(--ai)",steps:[
+ {t:"Confirm the tether",meta:"Ongoing · verify once, monitor after",
+  where:"Between your appliance and Cisco.",
+  needs:["Outbound path to Cisco open"],
+  actions:["Verify update packages are reaching the appliance without manual intervention.","Confirm the maintenance window and upgrade schedule are set.","Document what happens if the tether drops — you fall back to the manual Package Catalog path."],
+  kv:[["Grace, non-reboot","2 weeks"],["Grace, reboot","4 weeks"],["Auto retries","2, then manual"]],
+  verify:"An update lands automatically. This is the entire reason for choosing tethered over air-gapped, so prove it works.",
+  gates:"Handover.",
+  warn:"Tethered is announced but thinly documented compared to SaaS and air-gapped. Confirm the specifics with your Cisco team before committing this to a design document."},
+ {t:"Validate and hand over",meta:"After first collection · 1 hour",
+  where:"Across the appliance.",
+  needs:["A completed collection cycle"],
+  actions:["Compare appliance inventory against the SaaS contract-based inventory from step 4 — the gap is your telemetry coverage problem.","Confirm assessments are generating findings.","Set up users, resource groups and tags.","Name a platform owner and book the monthly release-note review."],
+  kv:[["Reference inventory","SaaS contract data"],["Release cadence","monthly"]],
+  verify:"Coverage understood, findings generating, owner named.",
+  gates:"Nothing — end state."}
+]}],
+
+airgap:[
+{p:"Phase 0",t:"Decide before you download",hue:"var(--estate)",steps:[
+ {t:"Confirm entitlement and contract type",meta:"Cisco entitlement systems · hours to days",
+  where:"Cisco's entitlement layer.",
+  needs:["A CCO ID","Contract numbers"],
+  actions:["Confirm each contract is a Cisco Support contract.","Confirm CCO entitlement."],
+  kv:[["Contract type","Cisco Support only"]],
+  verify:"Contracts visible against the profile.",
+  gates:"Everything."},
+ {t:"Decide whether you need AI inside the enclave",meta:"Design decision · the biggest fork in this build",
+  where:"A decision that doubles your hardware footprint if the answer is yes.",
+  needs:["Agreement on whether the AI Assistant and generated insights are in scope"],
+  actions:["<b>No AI:</b> one VM. Assets, Assessments and day-to-day operations all work.","<b>With AI:</b> two VMs, one with a validated GPU, and 128 vCPU / 256 GB / 2.6 TB total.","Confirm GPU availability before committing — the validated part has a lead time."],
+  kv:[["Without AI","1 VM, full non-AI functionality"],["With AI","2 VMs, 128 vCPU · 256 GB · 2.6 TB"],["Validated GPU","NVIDIA RTX Pro 6000 Blackwell Server Edition"],["Unvalidated","H200 · H100 · H100 NVL · A100"]],
+  verify:"Decision documented, and hardware ordered if AI is in scope.",
+  gates:"Sizing, procurement, and the whole of Phase 4.",
+  warn:"You can add the GPU node later — the cluster runs non-accelerated until one is present. But sizing the first VM correctly now avoids rebuilding it."}
+]},
+{p:"Phase 1",t:"Stage everything on the connected side",hue:"var(--cloud)",steps:[
+ {t:"Create or access the Cisco IQ SaaS account",meta:"iq.cisco.com · minutes",
+  where:"Cisco cloud, on a machine that has internet. The enclave will never reach this.",
+  needs:["CCO credentials"],
+  actions:["Create the account at <code>iq.cisco.com</code>.","Attach at least one service contract."],
+  kv:[["Purpose","Package Catalog and support cases only"],["Enclave connectivity","none, ever"]],
+  verify:"You reach Package Catalog.",
+  gates:"Every download."},
+ {t:"Download the full software set",meta:"Package Catalog · 20–25 GB plus modules",
+  where:"Onto a staging machine, then onto approved removable media.",
+  needs:["Disk space","Your hypervisor decided","Your AI decision from step 2"],
+  actions:["Package Catalog → Cisco IQ Virtual Appliance → Download options → select hypervisor and version.","Download the module installers you need — Assessments and any others.","Download the current rule packages.","If AI is in scope, download the AI Inference Infrastructure installer.","Read each package's release notes before transferring — you cannot check them from inside the enclave."],
+  kv:[["Appliance installer","20–25 GB"],["Assets module","pre-installed"],["Everything else","separate downloads"],["AI component","AI Inference Infrastructure installer"]],
+  verify:"All packages downloaded, checksummed, and on approved transfer media.",
+  gates:"Deployment.",
+  warn:"Take the release notes with you. Once the appliance is in the enclave you have no way to look up what a version changed."}
+]},
+{p:"Phase 2",t:"Design the enclave footprint",hue:"var(--onprem)",steps:[
+ {t:"Size the appliance",meta:"Design decision · 30 min",
+  where:"Your enclave capacity plan.",
+  needs:["Device count","The AI decision"],
+  actions:["Under 5K devices, no GPU: 48 vCPU, 96 GB, 1.3 TB SSD.","Up to 20K, no GPU: 64 vCPU, 128 GB, 1.3 TB SSD.","Up to 20K with GPU: 128 vCPU, 256 GB, 2.6 TB, divided equally between two VMs.","Thick provisioning, SSD-backed, disk write above 70 MB/s."],
+  kv:[["≤5K, no GPU","48 · 96 GB · 1.3 TB"],["≤20K, no GPU","64 · 128 GB · 1.3 TB"],["≤20K + GPU","128 · 256 GB · 2.6 TB across 2 VMs"],["Collection schedule","24 h or more"]],
+  verify:"Capacity reserved for every VM in the design.",
+  gates:"Deployment."},
+ {t:"Reserve addressing",meta:"Network design · days",
+  where:"Inside the enclave. No DHCP, so every address is manual.",
+  needs:["Three addresses per node","DNS and NTP inside the enclave"],
+  actions:["Routable VM access IP for each node.","SysOrch <code>/32</code> — default <code>192.168.23.17</code>, change only on conflict.","Kubernetes pod <code>/20</code> — default <code>100.64.0.0/20</code>, must not overlap the VM IP, gateway, DNS or NTP.","DNS A record plus matching PTR. If an IP resolves to several hostnames, the first is used for the UI.","At least one NTP source reachable inside the enclave."],
+  kv:[["Addresses per node","3"],["DHCP","not supported"],["PTR record","required"],["NTP","plain · key-based · NTS"]],
+  verify:"Forward and reverse DNS resolve, NTP is reachable.",
+  gates:"Console network configuration.",
+  warn:"Clock skew inside an isolated enclave is a common cause of SAML failures later. Get NTP right now, not when SSO breaks."},
+ {t:"Open the firewall — including the multi-node set",meta:"Change request · days",
+  where:"Enclave firewalls and any segmentation between nodes.",
+  needs:["The full port list, in one change request"],
+  actions:["Base: <code>22/tcp</code>, <code>443/tcp</code>, <code>53 · 123 · 161 udp</code>.","If multi-node: <code>10250</code> and <code>10256/tcp</code> for Kubernetes, <code>6443/tcp</code> to the management node only, <code>179/tcp</code> for BGP, <code>4789/udp</code> for VXLAN, <code>500</code> and <code>4500/udp</code> for IKE, and ESP protocol 50.","Submit all of it as one change — piecemeal requests will stretch this build by weeks."],
+  kv:[["Base","22 · 443 tcp, 53/123/161 udp"],["K8s","10250 · 10256 tcp"],["K8s API","6443 tcp, management node only"],["VXLAN control","179 tcp (BGP)"],["VXLAN data","4789 udp"],["IPSec","500 · 4500 udp, ESP 50"]],
+  verify:"Rules staged and tested between the node addresses.",
+  gates:"Joining the GPU node. Miss the multi-node ports and the join silently fails."}
+]},
+{p:"Phase 3",t:"Build the primary node",hue:"var(--onprem)",steps:[
+ {t:"Deploy the primary node",meta:"Hypervisor · 1 hour",
+  where:"Inside the enclave.",
+  needs:["Installer media","Reserved capacity"],
+  actions:["<b>ESXi:</b> deploy the OVF through vCenter, not directly to a host. Set CPU shares Low, tick Reserve all guest memory. On HA or manual-DRS clusters, pin each VM to a host.","<b>Hyper-V:</b> Generation 2, disable Secure Boot, no Dynamic Memory, three virtual hard disks with disk 1 first, enable device naming.","<b>KVM:</b> import the first disk, OS type AlmaLinux 9, add the remaining two disks, all buses SCSI, firmware UEFI."],
+  kv:[["ESXi","8.0+, vCenter only"],["Hyper-V","Server 2022 / 2025, Gen 2, Secure Boot off"],["KVM","RHEL 9.7+, AlmaLinux 9 type, UEFI"],["Disks","3, order matters"]],
+  verify:"The VM powers on and the console is reachable.",
+  gates:"Network configuration."},
+ {t:"Configure network from the console",meta:"VM console · 20 min",
+  where:"The console. No web interface exists yet.",
+  needs:["Reserved addresses","NTP details"],
+  actions:["Log in with <code>admin</code> / <code>admin</code>.","Option 1, configure network settings.","Enter IP, gateway, DNS list, search domain and NTP servers.","Select NTP authentication — none, traditional key-based (algorithm plus hex key), or NTS.","Set and confirm the real admin password.","Review and confirm."],
+  kv:[["Initial credentials","admin / admin"],["NTP servers","comma-separated"],["NTP auth","none · key · NTS"]],
+  verify:"Success message, and SSH works on the new address.",
+  gates:"Installation."},
+ {t:"Snapshot, then run the installer",meta:"https://FQDN/installer/welcome · up to 2 hours",
+  where:"The appliance web installer.",
+  needs:["The internal pod range"],
+  actions:["<b>Take a hypervisor snapshot first.</b> This is your only clean rollback point.","Browse to <code>https://&lt;FQDN&gt;/installer/welcome</code>.","Choose Cisco IQ Virtual Appliance, then Start.","Enter the Internal IP Range and confirm no overlap.","Wait for all tasks to complete — up to two hours."],
+  kv:[["Duration","up to 2 hours"],["Result","redirects to login"],["Pre-installed","Assets module"]],
+  verify:"You reach the appliance login page and can sign in.",
+  gates:"Modules, GPU node, collection."}
+]},
+{p:"Phase 4",t:"Add AI, if in scope",hue:"var(--ai)",steps:[
+ {t:"Deploy the GPU node VM",meta:"Hypervisor · 1 hour",
+  where:"A second VM with GPU passthrough configured.",
+  needs:["Hypervisor GPU passthrough working","Same installer version as the primary"],
+  actions:["Confirm the hypervisor exposes the GPU to the VM before you start.","Deploy the appliance installer exactly as you did for the primary.","Configure network from the console with its own addresses."],
+  kv:[["Version match","exact, at join time"],["GPU","RTX Pro 6000 Blackwell validated"],["Resource split","half the total across two VMs"]],
+  verify:"The node boots and the GPU is visible to the guest.",
+  gates:"Joining the cluster.",
+  warn:"A supplemental node must be the exact same version as the primary during the initial join. Version drift here is a rebuild, not a patch."},
+ {t:"Join it as a supplemental node",meta:"Installer → Supplemental Node · 30 min",
+  where:"Between the two VMs, over the multi-node ports.",
+  needs:["Primary node FQDN","Primary local admin credentials","Multi-node ports open"],
+  actions:["On the primary, check <b>System Configuration → Node Management</b> shows the primary with a successful status.","On the new node, open the VA Installer and choose <b>Supplemental Node</b>.","Enter the primary node FQDN, local admin username and password, and select <b>GPU worker node</b> as the node type.","Click Add node and wait for 'Supplemental node ready'.","Go to <b>System Management → Node Management → More → Add Node → Add GPU Node</b> to complete the integration."],
+  kv:[["Node type","GPU worker node"],["Credentials","sync from primary automatically"],["Management plane HA","none"]],
+  verify:"The node appears in the cluster view on Node Management.",
+  gates:"AI Inference Infrastructure installation.",
+  warn:"Multi-node gives scale and GPU, not high availability. If the primary management node goes down, cluster operations are impacted."},
+ {t:"Install AI Inference Infrastructure",meta:"System Settings → Package Management · 30 min",
+  where:"On the cluster.",
+  needs:["The AI installer downloaded in step 4"],
+  actions:["System Settings → Package Management.","Install the AI Inference Infrastructure component.","Install or upgrade any modules that depend on it."],
+  kv:[["Unlocks","AI Assistant · Key Insights · Full Insights"],["Fallback","non-accelerated mode if GPU absent"]],
+  verify:"The AI Assistant responds to a prompt, entirely inside the enclave.",
+  gates:"Nothing — but this is the payoff for Phase 4."}
+]},
+{p:"Phase 5",t:"Populate and secure",hue:"var(--collect)",steps:[
+ {t:"Install modules and rules",meta:"System Settings → Package Management · 30 min",
+  where:"On the appliance.",
+  needs:["Module and rule packages from step 4"],
+  actions:["Install Assessments and any other modules.","Install the current rule packages.","Record the version of every package installed — you will need it to know what to download next time."],
+  kv:[["Pre-installed","Assets"],["Version tracking","keep your own record"]],
+  verify:"Modules appear in navigation, rule versions recorded.",
+  gates:"Assessments produce nothing without their rules."},
+ {t:"Configure identity and hardening",meta:"System Settings → System Configuration · 1–2 hours",
+  where:"On the appliance.",
+  needs:["SSL cert and key in one PEM file","IdP metadata","Syslog IPs","SCP server"],
+  actions:["Upload and enable the custom SSL certificate.","Add the identity provider and complete role mapping — status stays Incomplete until you do.","Add up to two syslog servers, IP addresses only.","Configure the SCP server. In an enclave this is how upgrade bundles get in, so it is not optional.","Configure the mandatory login banner if policy requires acknowledgement."],
+  kv:[["SSL validity","90+ days remaining"],["IdPs","Okta · ADFS · Entra ID"],["System roles","General Account Administrator · General Account Viewer"],["Syslog","max 2, IP not FQDN"]],
+  verify:"SSO works end to end, certificate active, a test event reaches syslog.",
+  gates:"Operator onboarding and future upgrades.",
+  warn:"Your IdP must be reachable from inside the enclave. A cloud IdP such as Entra ID will not work here — plan for ADFS or an internal Okta reachable on the isolated network."},
+ {t:"Configure collection and schedules",meta:"System Settings → Connection Management · 1–2 hours",
+  where:"On the appliance. It discovers devices directly — there is no separate IQ Link here.",
+  needs:["SNMP and SSH credentials","Catalyst Center details or a device list"],
+  actions:["Create credential sets per security zone, bind them to IP ranges.","Add Catalyst Center connections, or submit devices directly by file or list.","Set discovery and inventory collection schedules to the maintenance window."],
+  kv:[["Discovery needs","SNMPv2c/v3 + SSH"],["Catalyst Center needs","HTTP/HTTPS"],["Match precedence","exact IP > trailing wildcards"],["Collection","24 h or more"],["Schedule sync","5–10 min"]],
+  verify:"Assets populate and the first collection completes.",
+  gates:"Assessments and insights."}
+]},
+{p:"Phase 6",t:"Operate — the part people underestimate",hue:"var(--alert)",steps:[
+ {t:"Design the update supply chain",meta:"Process design · do this before handover",
+  where:"A process spanning your connected side and the enclave. This is the real ongoing cost of air-gapped.",
+  needs:["A named owner","An agreed cadence","An approved transfer path"],
+  actions:["Name who logs into Cisco IQ SaaS, downloads packages, and carries them in.","Set a cadence — security advisories and rule packs go stale silently, with no warning inside the enclave.","Document the transfer path and any approval it requires.","Confirm the SCP server path used for upgrade imports.","Note that Accelerated Support Access and cloud connectors are unavailable here, so TAC engagement is slower by design — plan diagnostics collection accordingly."],
+  kv:[["Supply line","Package Catalog on the connected side"],["Advisory updates","manual patch download and install"],["Upgrade grace, non-reboot","2 weeks"],["Upgrade grace, reboot","4 weeks"],["Auto retries","2, then manual"]],
+  verify:"A named owner, a calendar cadence, and one full update cycle rehearsed end to end.",
+  gates:"Handover.",
+  warn:"Nothing tells you your advisory data is stale. If no one owns this, the appliance keeps reporting confidently against months-old rules."},
+ {t:"Validate and hand over",meta:"After first collection · 1–2 hours",
+  where:"Across the cluster.",
+  needs:["A completed collection cycle"],
+  actions:["Compare appliance inventory against the contract-based inventory in SaaS — the gap is your coverage problem, usually credentials or an IP outside every Included range.","Confirm assessments are generating findings across advisories, hardening and configuration.","If AI is deployed, run a prompt and confirm the response comes from the local GPU node.","Create users, user groups, resource groups and tags.","Run a system diagnostics bundle once so the process is proven before you need it in an incident."],
+  kv:[["Diagnostics","console menu option 3, exports over SCP/SFTP"],["Diagnostics collects","reachability, system info, Kubernetes state, logs"],["Support cases","raised from Cisco IQ SaaS"]],
+  verify:"Coverage understood, findings generating, AI responding locally if deployed, diagnostics bundle proven.",
+  gates:"Nothing — end state."}
+]}]
+};
+
+var COMPONENTS=[
+{n:"Cisco IQ",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered","airgap"],
+ plain:"The application itself — the front door to Cisco Support, replacing CX Cloud.",
+ how:["Reached at iq.cisco.com, or run on your own kit as the Virtual Appliance.","Consolidates portals, tools and APIs into one interface. Cisco calls it the one front door to CX.","Four modules: Assets, Assessments, Support, AI Assistant. Plus dashboards, reports, the Resilient Infrastructure Playbook and Package Catalog.","Feature access is gated per asset by the support tier covering it, so one account can hold a mix of Basic, Standard and Signature."],
+ needs:["A CCO ID and at least one entitled Cisco Support contract.","No additional cost — included with a valid support contract."],
+ dep:"Present in every mode, but the on-prem builds carry a narrower module set — Cisco scopes the appliance to Assets and Assessments.",
+ watch:"The data storage region is fixed at account creation. Changing it means a new account."},
+{n:"Cisco IQ Link",cat:"Collection",hue:"var(--collect)",tag:"collect",m:["saas","tethered"],
+ plain:"The on-prem VM that finds your devices, collects data from them, and carries it to Cisco.",
+ how:["Deployed as an OVA or VHD on ESXi, Hyper-V or KVM. Install package is 10–25 GB.","Runs Kubernetes internally, with an APISIX gateway fronting the SAML routes.","Two collection paths: direct to devices over SNMP and SSH, or through Catalyst Center over HTTP/HTTPS.","Discovery and inventory collection run on separate schedules you control.","Has its own admin surface — local users or SAML SSO, syslog export, custom SSL, banners, scheduled auto-upgrade.","Carries RADKit functionality for remote troubleshooting."],
+ needs:["Credential sets bound to IP ranges.","An SCP server if you plan to import upgrade bundles manually.","VPN access if cross-launching into it remotely."],
+ dep:"Not used in air-gapped — the Virtual Appliance carries the same connection-management stack internally, so there is nothing to bridge to.",
+ watch:"No limit on Link instances per account, but each connects to at most 20 non-cluster Catalyst Centers."},
+{n:"Cisco IQ Connector",cat:"Collection",hue:"var(--collect)",tag:"collect",m:["saas","tethered"],
+ plain:"The collection engine inside IQ Link. Not something you install separately.",
+ how:["Does the actual telemetry and device-data gathering.","IQ Link is the VM plus the secure channel; the Connector is the part doing the work inside it."],
+ needs:["Nothing — it ships as part of IQ Link."],
+ dep:"Follows IQ Link. Where there is no Link, there is no separately named Connector.",
+ watch:"These two names get used interchangeably in the field. They are not the same thing."},
+{n:"Cisco IQ Virtual Appliance",cat:"On-prem",hue:"var(--onprem)",tag:"onprem",m:["tethered","airgap"],
+ plain:"The entire platform packaged to run inside your own network, with no dependency on Cisco's cloud.",
+ how:["Self-contained VM for environments that cannot connect out. GA since July 2026.","Three sizing profiles: 5K without GPU, 20K without GPU, 20K with GPU across two VMs.","Assets ships pre-installed. Everything else installs as a module from Package Catalog.","Discovers devices itself using the same connection-management stack as IQ Link."],
+ needs:["ESXi 8.0+ via vCenter, Hyper-V on Server 2022/2025, or KVM on RHEL 9.7+.","Three IP addresses, DNS A record plus PTR, NTP. No DHCP.","Thick provisioning on SSD, disk write above 70 MB/s."],
+ dep:"The defining component of both on-prem modes. Irrelevant in SaaS, where Cisco runs the platform for you.",
+ watch:"Install takes up to two hours, and you should snapshot after network config but before install — it's your only clean rollback."},
+{n:"GPU supplemental node",cat:"On-prem",hue:"var(--onprem)",tag:"onprem",m:["airgap"],
+ plain:"A second appliance VM with a GPU, so AI features run without any data leaving your enclave.",
+ how:["Installed like the appliance, then joined through the Supplemental Node installer.","AI Inference Infrastructure installs separately via Package Management.","The cluster checks for GPU availability per module and enables accelerated features only where hardware and package are both present."],
+ needs:["NVIDIA RTX Pro 6000 Blackwell Server Edition — the only validated option.","Hypervisor configured for GPU passthrough.","Exact version match with the primary node at join time."],
+ dep:"Air-gapped only. SaaS and tethered both send inference to Cisco's RTP data centre, so no local GPU is needed.",
+ watch:"H200, H100, H100 NVL and A100 are listed but unvalidated — H100 and A100 are suggested for a single concurrent user only. Without a GPU the system falls back to non-accelerated mode rather than failing."},
+{n:"Cloud connectors",cat:"Collection",hue:"var(--collect)",tag:"collect",m:["saas","tethered"],
+ plain:"Direct cloud-to-cloud links to Cisco controllers you already run — no collector needed.",
+ how:["Intersight: pick which accounts to connect.","Meraki Dashboard: connect with an API key.","Catalyst SD-WAN Manager: select organisations. Needs v20.6+, a Smart Account with a unique org name, and Data Collection enabled in SD-WAN Manager.","Webex Control Hub: enabled by opening a support case, not self-service.","First collection lands within about an hour, then daily — hourly for SD-WAN."],
+ needs:["Admin rights on the relevant Smart Account or Virtual Account, plus Cisco IQ Account Administrator."],
+ dep:"Unavailable in air-gapped by definition — nothing reaches out of the enclave.",
+ watch:"Catalyst SD-WAN Cloud is not supported. Removing a connected account also requires a support case. Multi-org Meraki support is still maturing."},
+{n:"Service contracts",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered","airgap"],
+ plain:"The cheapest route to an inventory — add a contract number and its covered assets appear.",
+ how:["Links contract data held by different team members into one view.","Brings in assets with no telemetry connection at all, including air-gapped kit.","Populates within about an hour; longer for very large contracts."],
+ needs:["Your Cisco ID must be explicitly entitled to the contract.","Must be a Cisco Support contract, not a partner contract."],
+ dep:"Attached in the SaaS account in every mode. For air-gapped builds it gives you the reference inventory to check the appliance's discovery against.",
+ watch:"The Support module reads contracts in near real time, but Assets only fills on the next backend sync — a contract can look added while assets are still missing."},
+{n:"Assets module",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered","airgap"],
+ plain:"Everything you own, when it stops being supported, and which pieces matter most.",
+ how:["Inventory with a Last Signal field — when Cisco last knew the asset was alive, from TAC cases, contract renewals and telemetry.","EOL and LDOS tracking from End of Sale to Last Date of Support.","Service coverage: which assets are covered and which are exposed.","Asset criticality: role and importance classification you can override by hand.","Tags as key:value pairs, usable as filters everywhere."],
+ needs:["Contract data at minimum. Telemetry for the AI insight layers."],
+ dep:"In all three. On the appliance it is pre-installed in the installer, so it works the moment installation finishes.",
+ watch:"The inventory view defaults to Equipment Type = CHASSIS. Clear all filters before exporting or you'll ship an incomplete list."},
+{n:"Assessments module",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered","airgap"],
+ plain:"Continuous conformance checking across security, configuration and lifecycle.",
+ how:["Security advisories and field notices, prioritised by severity and asset criticality.","Security hardening: device configuration against hardening rules.","Configuration: against Cisco-recommended best practice.","Software release conformance: against Cisco suggested releases, by product family.","Certificate expirations, bucketed by time-to-expiry window.","Quantum-safe infrastructure: scored across quantum-safe products, quantum-safe communication and crypto agility, benchmarked to CNSA 2.0. Covers IOS XE, IOS XR, ASA, FTD, NX-OS and NX-OS ACI."],
+ needs:["A live telemetry connection. Contract-only assets produce no findings.","Standard tier for insights, Signature for deep insights and recommendations."],
+ dep:"In all three, but on-prem it installs as a separate module from Package Catalog rather than being there on day one.",
+ watch:"Findings generate during telemetry processing. There is no way to trigger an assessment on demand until 2HFY27."},
+{n:"Deterministic rule engine",cat:"Intelligence",hue:"var(--ai)",tag:"ai",m:["saas","tethered","airgap"],
+ plain:"The part that decides pass or fail. It matches rules — it does not reason.",
+ how:["Hardening, configuration and conformance evaluation is deterministic rule matching, stated explicitly by Cisco. Not LLM-based.","Rules ship as versioned packages through Package Catalog, independent of the platform release.","Evaluation happens as telemetry is processed.","New security advisories are pre-announced seven days before surfacing in the upgrade workflow, giving you planning time."],
+ needs:["Current rule packages. On air-gapped deployments, someone carrying them in."],
+ dep:"In all three. The difference is how rules stay current: automatically in SaaS and tethered, by hand in air-gapped.",
+ watch:"Custom customer-defined compliance rules are roadmap with no date. You get Cisco's rule set, not yours."},
+{n:"LLM inference layer",cat:"Intelligence",hue:"var(--ai)",tag:"ai",m:["saas","tethered"],
+ plain:"The summarising and prioritising layer on top of the rules — and the thing customers ask hardest about.",
+ how:["Powers insights, generated reports, natural-language customisation and the AI Assistant.","Stateless: response bodies are not stored or logged, no customer data retained, nothing used to train the model. Only token counts and metadata persist.","No PII is included in inference requests.","Grounded on Cisco.com documentation, TAC knowledge bases, TechZone, community forums and your entitled cases — not general web knowledge."],
+ needs:["Nothing on your side in SaaS or tethered. A GPU node in air-gapped."],
+ dep:"Cisco-hosted inference applies to SaaS and tethered. Air-gapped replaces it entirely with the local GPU node — same capability, different location.",
+ watch:"Inference is centralised in Cisco's RTP data centre. US data stays in region; EMEA and APJC send a CLI-data subset to the US. For regulated customers this single fact often decides the deployment mode."},
+{n:"AI Assistant",cat:"Intelligence",hue:"var(--ai)",tag:"ai",m:["saas","tethered","airgap"],
+ plain:"Ask questions about your own estate in plain language, and turn the answers into reports.",
+ how:["Available from anywhere in the interface.","Answers about assets, cases and assessments; generates and saves analyses.","Analyze response turns an answer into a full analysis you can save, customise by prompt, and regenerate as versioned snapshots.","Self-serve troubleshooting: paste an error and get likely root cause and next steps without opening a case. Device-level diagnostics at Standard tier."],
+ needs:["Basic tier for self-serve troubleshooting; Standard for device-level.","IQ Link with Rapid Resolution enabled if you want it running show commands."],
+ dep:"Available in all three, but air-gapped only if you deploy the GPU node. Without one the appliance runs non-accelerated and the Assistant is absent.",
+ watch:"Known issue in the August release: asking for an exportable device list affected by a specific vulnerability can hang indefinitely."},
+{n:"Support module",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered"],
+ plain:"Your TAC cases and RMAs, with AI assistance layered on.",
+ how:["Case counts, status, severity and associated RMAs.","Case opening cross-launches to Support Case Manager.","Shows account-wide cases for onboarded contracts, plus a separate view of cases you personally raised.","Draws on Cisco.com documentation, TAC knowledge bases, TechZone and community forums."],
+ needs:["Contracts attached to the account. Visibility is bounded by CCO entitlement."],
+ dep:"Cisco documents the Support module as a SaaS capability. Air-gapped customers still use it — from Cisco IQ SaaS on a connected machine, not from inside the enclave.",
+ watch:"Only the person who originally opened a case can escalate it."},
+{n:"Accelerated Support Access",cat:"Collection",hue:"var(--collect)",tag:"collect",m:["saas"],
+ plain:"Two opt-in toggles that let Cisco see into a device faster when a case is open.",
+ how:["Rapid Resolution: on case open, IQ Link auto-collects diagnostics, attaches logs and grants the case owner access. The AI Assistant can run show commands.","TAC Remote Access: an assigned TAC engineer collects diagnostics remotely using show commands.","Both are read-only. Neither makes device changes, and neither feeds model training.","Configured per IQ Link instance under Administration."],
+ needs:["IQ Link v1.2.0 for directly connected devices.","Cisco IQ SaaS — the settings are documented as SaaS-only."],
+ dep:"SaaS only. On-prem builds lose it, which is one reason TAC engagement is slower there — plan your own diagnostics collection instead.",
+ watch:"Devices discovered through Catalyst Center aren't covered yet. Expect a security review before a regulated customer enables either toggle."},
+{n:"Resilient Infrastructure Playbook",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered"],
+ plain:"A guided three-step loop from finding exposure to fixing it.",
+ how:["Step 1, map the attack surface: telemetry coverage, contract coverage, and what's dark.","Step 2, remediate critical and high exposures: advisories weighted by asset importance, with a count of how many resolve through a single upgrade.","Step 3, modernise legacy systems: assets at or past LDOS.","Step 2 hands off directly into the IOS-XE upgrade workflow when an upgrade resolves live advisories."],
+ needs:["Standard or Signature tier assets."],
+ dep:"Documented as part of the platform experience. Cisco scopes the air-gapped appliance to Assets and Assessments, so confirm availability there before promising it.",
+ watch:"Step 1 is also the most honest telemetry-coverage number in the product. Use it during validation."},
+{n:"IOS-XE upgrade workflow",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered"],
+ plain:"The one place Cisco IQ changes device state rather than just observing it.",
+ how:["Four stages: Plan, Prepare, Execute, Verify.","Plan confirms target version and change window. Prepare walks a long readiness checklist — console access, config backup, flash space, config register 0x2102, crypto and SNMP readiness, licence check, platform match, stack validation.","Execute offers manual (you run the install command) or automated (IQ runs pre-flight checks, installs, monitors the reload).","Verify compares against the baseline you captured and records the outcome."],
+ needs:["IOS-XE assets only. Standard tier."],
+ dep:"Reached through the Resilient Infrastructure Playbook, so it follows the same scoping. Treat air-gapped availability as unconfirmed.",
+ watch:"Automated upgrade interrupts traffic and reloads the device. Once started the method cannot be switched. Rolling back means marking the upgrade unsuccessful."},
+{n:"Package Catalog",cat:"On-prem",hue:"var(--onprem)",tag:"onprem",m:["saas","tethered","airgap"],
+ plain:"Where every downloadable piece lives — installers, modules, rules, entitlements.",
+ how:["Cards for IQ Link and Virtual Appliance with installation and upgrade packages by hypervisor and version.","Release notes per version, viewable before download.","On air-gapped, this is the entire supply chain into the enclave."],
+ needs:["Access to Cisco IQ SaaS from a connected machine.","Disk space — installers run 10–25 GB."],
+ dep:"Lives in SaaS but matters in all three. In SaaS you use it once for IQ Link; in air-gapped it becomes a recurring operational task.",
+ watch:"Some newer modules and reports require the latest IQ Link or appliance version. Running behind means features misbehave rather than clearly failing."},
+{n:"Reports engine",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas","tethered","airgap"],
+ plain:"Turn any analysis into a saved, versioned, editable document.",
+ how:["Generated from the AI Assistant or from any Insights panel via Full Analysis.","Snapshots keep multiple versions of the same report over time instead of duplicating files.","Customise by reordering or removing widgets, or prompting in natural language for changes to titles and key insights.","Export to PDF, or export table data to XLS and CSV with column selection."],
+ needs:["Nothing beyond module access."],
+ dep:"In all three, though AI-generated reports on air-gapped depend on the GPU node. Table exports to XLS and CSV work regardless.",
+ watch:"Executive reports — Service Review and Growth — are Signature tier and Account Administrator only."},
+{n:"Access control",cat:"Identity",hue:"var(--estate)",tag:"identity",m:["saas","tethered","airgap"],
+ plain:"Who sees what. Three mechanisms that combine.",
+ how:["Users, invited by email against a CCO ID, with an activation flow.","User groups apply a role to many users at once. An All account users group exists by default and cannot be deleted.","Resource groups scope a role to a defined subset of assets — the mechanism for regional or business-unit separation.","Tags are free-form key:value labels usable as filters."],
+ needs:["Account Administrator rights to configure any of it."],
+ dep:"In all three, but the model differs: SaaS has the full RBAC set, while the on-prem components expose only Administrator and Viewer, with users activated by a shared code rather than email invite.",
+ watch:"Assign a role with no resource group and it applies to every relevant asset in the account. Restriction is opt-in, not default."},
+{n:"Identity providers",cat:"Identity",hue:"var(--estate)",tag:"identity",m:["saas","tethered","airgap"],
+ plain:"SAML SSO for the on-prem components, with optional certificate-based auth.",
+ how:["Okta, ADFS and Entra ID are all documented in detail.","One IdP at a time. Upload IdP metadata, then map IdP roles to two system roles: General Account Administrator and General Account Viewer.","Status stays Incomplete until role mapping is done — expected, not an error.","Certificate-based auth is supported on ADFS and Entra ID for smart card or software certificate login."],
+ needs:["SP metadata and certificate downloaded from the on-prem UI and loaded into your IdP."],
+ dep:"Applies wherever an on-prem component exists — IQ Link in SaaS and tethered, the appliance in both on-prem modes. In air-gapped the IdP must itself be reachable inside the enclave, which rules out cloud-hosted Entra ID.",
+ watch:"Entra ID must use App Roles rather than group claims — group IDs arrive as UUIDs and won't map, and cloud-only tenants can't send group names without P1/P2. For ADFS certificate auth, non-self-signed certificates sitting in the Trusted Root store break client cert auth entirely."},
+{n:"Peer Benchmarks",cat:"Platform",hue:"var(--cloud)",tag:"platform",m:["saas"],
+ plain:"How your estate compares to other Cisco IQ customers in your segment.",
+ how:["Compares telemetry-enabled asset percentage, LDOS outlook, critical and high advisory exposure, field notice exposure, and assets both past LDOS and affected by live advisories.","Filterable by market segment and industry vertical.","Surfaces contextual comparison, gap analysis and goal-setting. Recommendations only appear where a meaningful gap exists."],
+ needs:["Standard tier. Cisco IQ SaaS only."],
+ dep:"SaaS only, and structurally so — the comparison needs the shared cloud dataset, which an on-prem instance has no access to.",
+ watch:"Data is anonymised and aggregated — you see the peer average, never an identifiable peer."},
+{n:"Legacy collectors",cat:"Collection",hue:"var(--collect)",tag:"collect",m:["saas"],
+ plain:"CSPC and CX Agent — the previous generation, on borrowed time.",
+ how:["Available only inside accounts migrated from CX Cloud.","Removing one requires opening a support case.","IQ Link consolidates both into a single connector."],
+ needs:["An existing CX Cloud relationship. New customers cannot use these at all."],
+ dep:"SaaS only, and only inside migrated accounts. They have no place in either on-prem design.",
+ watch:"End-of-support notification is pending. Cisco's own guidance is to treat them as an interim bridge and expedite IQ Link."}
+];
+
+/* ---------- render ---------- */
+var picker=document.getElementById("picker");
+MODES.forEach(function(m){
+  var b=document.createElement("button");
+  b.className="mode";b.style.setProperty("--hue",m.hue);
+  b.setAttribute("aria-pressed","false");b.dataset.mode=m.id;
+  b.innerHTML='<span class="mode-name">'+m.name+'</span><span class="mode-for">'+m.forWho+'</span>'+
+    '<span class="mode-facts">'+m.facts.map(function(f){return '<span class="fact">'+f+'</span>';}).join("")+'</span>';
+  b.addEventListener("click",function(){setMode(m.id);});
+  picker.appendChild(b);
+});
+
+var openNodes={};
+var LABEL={required:"Required",recommended:"Recommended",optional:"Optional",na:"Not used"};
+
+function renderMap(mode){
+  var map=document.getElementById("map");map.innerHTML="";
+  BRANCHES.forEach(function(br){
+    var c={required:0,recommended:0,optional:0,na:0};
+    br.items.forEach(function(it){c[it.s[mode]]++;});
+    var parts=[];
+    if(c.required)parts.push(c.required+" required");
+    if(c.recommended)parts.push(c.recommended+" recommended");
+    if(c.optional)parts.push(c.optional+" optional");
+    if(c.na)parts.push(c.na+" not used");
+    var node=document.createElement("div");
+    node.className="node"+(openNodes[br.id]?" open":"");
+    node.style.setProperty("--hue",br.hue);
+    var head=document.createElement("button");
+    head.className="node-head";
+    head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    head.innerHTML='<span class="node-top"><span class="node-name">'+br.title+'</span><span class="chev">▼</span></span>'+
+      '<span class="node-count">'+parts.join(" · ")+'</span>';
+    head.addEventListener("click",function(){
+      openNodes[br.id]=!openNodes[br.id];
+      node.classList.toggle("open",openNodes[br.id]);
+      head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    });
+    var body=document.createElement("div");body.className="node-body";
+    br.items.forEach(function(it){
+      var st=it.s[mode];var d=document.createElement("div");
+      d.className="item"+(st==="na"?" na":"");
+      d.innerHTML='<div class="item-top"><span class="badge b-'+st+'">'+LABEL[st]+'</span><b>'+it.n+'</b></div><p>'+it.p+'</p>'+
+        (st==="na"?"":'<div class="why">'+it.w+'</div>');
+      body.appendChild(d);
+    });
+    node.appendChild(head);node.appendChild(body);map.appendChild(node);
+  });
+}
+
+function renderLLD(mode){
+  var m=MODES.filter(function(x){return x.id===mode;})[0];
+  document.getElementById("lldTitle").textContent="Build sequence — "+m.name;
+  document.getElementById("lldSub").textContent=m.sub;
+  var host=document.getElementById("lld");host.innerHTML="";
+  var n=0;
+  LLD[mode].forEach(function(ph){
+    var h=document.createElement("div");h.className="phase";h.style.setProperty("--hue",ph.hue);
+    h.innerHTML='<span class="phase-n">'+ph.p+'</span><span class="phase-t">'+ph.t+'</span><span class="phase-line"></span>';
+    host.appendChild(h);
+    ph.steps.forEach(function(s){
+      n++;
+      var el=document.createElement("div");
+      el.className="lstep";el.dataset.n=n;el.style.setProperty("--hue",ph.hue);
+      var body='<div class="blk"><h5>Where it sits</h5><p>'+s.where+'</p></div>'+
+        '<div class="blk"><h5>Needs to be in place first</h5><ul>'+s.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul></div>'+
+        '<div class="blk"><h5>Do this</h5><ol>'+s.actions.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ol></div>'+
+        (s.kv?'<div class="blk"><h5>Values to have ready</h5><div class="kv">'+s.kv.map(function(p){return '<div><dt>'+p[0]+'</dt><dd>'+p[1]+'</dd></div>';}).join("")+'</div></div>':"")+
+        '<div class="blk"><h5>Confirm it worked</h5><div class="check">'+s.verify+'</div></div>'+
+        '<div class="blk"><h5>Blocked until this is done</h5><div class="gate">'+s.gates+'</div></div>'+
+        (s.warn?'<div class="warn"><b>Watch out — </b>'+s.warn+'</div>':"");
+      el.innerHTML='<button class="step-head" aria-expanded="false">'+
+        '<span class="step-title"><span class="step-t">'+s.t+'</span><span class="chev">▼</span></span>'+
+        '<span class="step-meta">'+s.meta+'</span></button>'+
+        '<div class="step-body">'+body+'</div>';
+      var hd=el.querySelector(".step-head");
+      hd.addEventListener("click",function(){
+        var o=el.classList.toggle("open");
+        hd.setAttribute("aria-expanded",String(o));
+      });
+      host.appendChild(el);
+    });
+  });
+  document.getElementById("expandAll").textContent="Expand all";
+}
+
+function setMode(id){
+  var m=MODES.filter(function(x){return x.id===id;})[0];
+  Array.prototype.forEach.call(picker.children,function(b){
+    b.setAttribute("aria-pressed",String(b.dataset.mode===id));
+  });
+  var hub=document.getElementById("hub");
+  hub.style.setProperty("--hue",m.hue);
+  hub.innerHTML="<b>"+m.hub+"</b><span>"+m.forWho+"</span>";
+  renderMap(id);renderLLD(id);
+}
+
+document.getElementById("expandAll").addEventListener("click",function(){
+  var steps=Array.prototype.slice.call(document.querySelectorAll("#lld .lstep"));
+  var anyClosed=steps.some(function(s){return !s.classList.contains("open");});
+  steps.forEach(function(s){
+    s.classList.toggle("open",anyClosed);
+    s.querySelector(".step-head").setAttribute("aria-expanded",String(anyClosed));
+  });
+  this.textContent=anyClosed?"Collapse all":"Expand all";
+});
+
+var subs=Array.prototype.slice.call(document.querySelectorAll(".subtabs button"));
+var subViews={map:document.getElementById("sub-map"),lld:document.getElementById("sub-lld")};
+subs.forEach(function(t){
+  t.addEventListener("click",function(){
+    subs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(subViews).forEach(function(k){subViews[k].classList.toggle("hidden",k!==t.dataset.sub);});
+  });
+});
+
+var CATS=[{id:"all",n:"All"},{id:"collect",n:"Collection"},{id:"platform",n:"Platform"},
+  {id:"ai",n:"Intelligence"},{id:"onprem",n:"On-prem"},{id:"identity",n:"Identity"}];
+var filters=document.getElementById("filters");
+CATS.forEach(function(c){
+  var b=document.createElement("button");
+  b.textContent=c.n;b.dataset.cat=c.id;
+  b.setAttribute("aria-pressed",String(c.id==="all"));
+  b.addEventListener("click",function(){
+    Array.prototype.forEach.call(filters.children,function(x){x.setAttribute("aria-pressed",String(x===b));});
+    Array.prototype.forEach.call(document.getElementById("compList").children,function(el){
+      el.classList.toggle("hidden",c.id!=="all"&&el.dataset.tag!==c.id);
+    });
+  });
+  filters.appendChild(b);
+});
+
+var DEPS=[{k:"saas",l:"SaaS",c:"saas"},{k:"tethered",l:"Tethered",c:"teth"},{k:"airgap",l:"Air-gapped",c:"air"}];
+var list=document.getElementById("compList");
+COMPONENTS.forEach(function(c){
+  var el=document.createElement("div");
+  el.className="comp";el.style.setProperty("--hue",c.hue);el.dataset.tag=c.tag;
+  var chips=DEPS.map(function(d){
+    var on=c.m.indexOf(d.k)!==-1;
+    return '<i class="'+(on?d.c:"off")+'">'+d.l+'</i>';
+  }).join("");
+  var allThree=c.m.length===3;
+  var body='<h4>Where it applies</h4><p class="depnote">'+(allThree?"Used in all three deployment modes. ":"")+c.dep+'</p>'+
+    '<h4>How it works</h4><ul>'+c.how.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<h4>What it needs</h4><ul>'+c.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<div class="warn"><b>Watch out — </b>'+c.watch+'</div>';
+  el.innerHTML='<button class="comp-head" aria-expanded="false">'+
+    '<span class="comp-title"><span class="comp-name">'+c.n+'</span><span class="chev">▼</span></span>'+
+    '<span class="cat">'+c.cat+'</span><p class="comp-plain">'+c.plain+'</p>'+
+    '<span class="dep"><em>Used in</em>'+chips+'</span></button>'+
+    '<div class="comp-body">'+body+'</div>';
+  var h=el.querySelector(".comp-head");
+  h.addEventListener("click",function(){
+    var o=el.classList.toggle("open");h.setAttribute("aria-expanded",String(o));
+  });
+  list.appendChild(el);
+});
+
+var tabs=Array.prototype.slice.call(document.querySelectorAll(".tabs button"));
+var views={deploy:document.getElementById("view-deploy"),comp:document.getElementById("view-comp"),ref:document.getElementById("view-ref")};
+tabs.forEach(function(t){
+  t.addEventListener("click",function(){
+    tabs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(views).forEach(function(k){views[k].classList.toggle("hidden",k!==t.dataset.view);});
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+
+setMode("saas");
+})();
+</script>
+</body>
+</html>
