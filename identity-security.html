@@ -42,10 +42,10 @@ code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:rgba
 .sitenav a:hover{background:var(--white);color:var(--ink)}
 .sitenav a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .sitenav a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
-@media(max-width:540px){
+@media(max-width:640px){
   .sitemark{display:none}
-  .sitenav{margin-left:0;width:100%}
-  .sitenav a{flex:1;text-align:center;padding:8px 6px}
+  .sitenav{margin-left:0;width:100%;gap:2px}
+  .sitenav a{flex:1;text-align:center;padding:8px 4px;font-size:12px}
 }
 .mast{border-bottom:2px solid var(--ink);padding-bottom:15px;margin-bottom:20px}
 .mast h1{font-size:clamp(27px,6.8vw,44px);line-height:1.03;letter-spacing:-.025em;font-weight:700;margin:0 0 9px}
@@ -223,10 +223,11 @@ dl.gloss dd{margin:0;color:var(--ink-60);font-size:13.5px;line-height:1.5}
 <div class="wrap">
 
 <div class="sitebar">
-  <span class="sitemark">Cisco Assessments</span>
+  <span class="sitemark">Cisco reference</span>
   <nav class="sitenav" aria-label="Guides">
     <a href="index.html">Cisco IQ</a>
     <a href="identity-security.html" aria-current="page">Identity Security</a>
+    <a href="ai-defense.html">AI Defense</a>
   </nav>
 </div>
 

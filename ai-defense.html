@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cisco AI Defense — use-case workflows</title>
+<meta name="description" content="Interactive reference for Cisco AI Defense: six use-case workflows with component maps and step-by-step build sequences, component deep dives, and technical reference.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cisco AI Defense — use-case workflows">
+<meta property="og:description" content="Pick a workflow, see which components it needs, then work through the build in order.">
+<meta name="twitter:card" content="summary">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%2316212C'/%3E%3Cpath d='M16 5l9 4v7c0 5.5-3.8 9.6-9 11-5.2-1.4-9-5.5-9-11V9z' fill='none' stroke='%230F6FA3' stroke-width='2'/%3E%3Ccircle cx='16' cy='15' r='3' fill='%236A3D9E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9EDF0; --paper-2:#F5F7F9; --white:#fff;
+  --ink:#16212C; --ink-60:#54636F; --ink-30:#9AA7B1; --rule:#C6D0D8;
+  --l-plat:#4F6272; --l-connect:#2B55A6; --l-policy:#0E7A6B;
+  --l-deploy:#8A4526; --l-ops:#6A3D9E; --alert:#A83228;
+  --w-disc:#0F6FA3; --w-val:#6A3D9E; --w-run:#0E7A6B;
+  --w-agent:#7C2B4C; --w-supply:#A8681B; --w-prem:#2F6234;
+  --v-need:#0E7A6B; --v-build:#4A3B8C;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:26px 16px 90px}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:rgba(22,33,44,.07);padding:1px 4px;border-radius:2px}
+
+/* site-level navigation between pages */
+.sitebar{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);margin-bottom:24px}
+.sitemark{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-30);
+  padding-bottom:9px;letter-spacing:.06em;text-transform:uppercase}
+.sitenav{display:flex;gap:3px;margin-left:auto}
+.sitenav a{font-size:13px;font-weight:600;text-decoration:none;color:var(--ink-60);
+  padding:8px 14px;border-radius:3px 3px 0 0;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-bottom:0;transition:background .14s,color .14s}
+.sitenav a:hover{background:var(--white);color:var(--ink)}
+.sitenav a[aria-current="page"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.sitenav a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+@media(max-width:640px){
+  .sitemark{display:none}
+  .sitenav{margin-left:0;width:100%;gap:2px}
+  .sitenav a{flex:1;text-align:center;padding:8px 4px;font-size:12px}
+}
+.mast{border-bottom:2px solid var(--ink);padding-bottom:15px;margin-bottom:20px}
+.mast h1{font-size:clamp(28px,7vw,46px);line-height:1.03;letter-spacing:-.025em;font-weight:700;margin:0 0 9px}
+.mast p{margin:0;max-width:58ch;color:var(--ink-60);font-size:15px}
+.stamp{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-60);margin-top:11px}
+
+.tabs{display:flex;margin:20px 0 22px;border:1.5px solid var(--ink);border-radius:2px;overflow:hidden;position:sticky;top:0;z-index:30;background:var(--paper)}
+.tabs button{flex:1;font:inherit;font-size:13px;font-weight:600;padding:11px 5px;background:var(--paper);color:var(--ink);border:0;border-right:1.5px solid var(--ink);cursor:pointer}
+.tabs button:last-child{border-right:0}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.tabs button:focus-visible{outline:3px solid var(--l-policy);outline-offset:-3px}
+
+.step-label{font-size:12px;font-weight:700;color:var(--ink-60);margin:0 0 9px}
+.picker{display:grid;gap:9px;margin-bottom:8px}
+@media(min-width:620px){.picker{grid-template-columns:repeat(2,1fr)}}
+.mode{text-align:left;font:inherit;cursor:pointer;padding:13px 15px;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;border-top:5px solid var(--hue);transition:background .14s,border-color .14s,color .14s}
+.mode:hover{background:var(--white)}
+.mode[aria-pressed="true"]{background:var(--hue);border-color:var(--hue);border-top-color:var(--ink);color:#fff}
+.mode[aria-pressed="true"] .mode-for,.mode[aria-pressed="true"] .mode-owner{color:rgba(255,255,255,.87)}
+.mode:focus-visible{outline:3px solid var(--hue);outline-offset:3px}
+.mode-name{font-weight:700;font-size:15.5px;letter-spacing:-.015em;display:block}
+.mode-for{font-size:13.5px;color:var(--ink-60);margin-top:3px;display:block;line-height:1.42}
+.mode-owner{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-30);margin-top:7px;display:block}
+.mode[aria-pressed="true"] .mode-owner{color:rgba(255,255,255,.7)}
+.mode-facts{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.fact{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 6px;border-radius:2px;background:rgba(22,33,44,.08);color:var(--ink-60)}
+.mode[aria-pressed="true"] .fact{background:rgba(255,255,255,.2);color:#fff}
+
+.subtabs{display:flex;margin:22px 0 18px;gap:6px}
+.subtabs button{flex:1;font:inherit;font-size:12.5px;font-weight:600;padding:10px 6px;cursor:pointer;
+  background:var(--paper-2);color:var(--hue);border:1.5px solid var(--hue);border-radius:2px}
+.subtabs button:hover{background:var(--white)}
+.subtabs button[aria-selected="true"]{background:var(--hue);color:#fff}
+.subtabs button:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 4px;font-size:12.5px;color:var(--ink-60);
+  padding:11px 13px;background:var(--paper-2);border-left:3px solid var(--v-need)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+.hub{margin:22px 0 0;padding:14px 17px;background:var(--hue,var(--ink));color:#fff;border-radius:3px;display:inline-block;max-width:100%}
+.hub b{display:block;font-size:17px;letter-spacing:-.01em}
+.hub span{font-size:13px;color:rgba(255,255,255,.86)}
+.map{position:relative;margin-left:16px;padding-left:26px;padding-top:6px}
+.map::before{content:"";position:absolute;left:0;top:0;bottom:34px;width:2px;background:var(--rule)}
+.node{position:relative;margin-bottom:11px}
+.node::before{content:"";position:absolute;left:-26px;top:-6px;width:26px;height:30px;
+  border-left:2px solid var(--rule);border-bottom:2px solid var(--rule);border-bottom-left-radius:12px}
+.node-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;padding:12px 14px}
+.node-head:hover{background:var(--white)}
+.node-head:focus-visible{outline:3px solid var(--hue);outline-offset:2px}
+.node-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.node-name{font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.chev{color:var(--ink-30);font-size:12px;transition:transform .18s;flex-shrink:0}
+.node.open .chev,.comp.open .chev,.lstep.open .chev{transform:rotate(180deg)}
+.node-count{font-size:12.5px;color:var(--ink-60);margin-top:3px}
+.node-body{display:none;padding:9px 0 6px 12px;border-left:2px dotted var(--rule);margin-left:8px}
+.node.open .node-body{display:block}
+.item{padding:9px 0;border-bottom:1px solid var(--rule)}
+.item:last-child{border-bottom:0}
+.item-top{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.item b{font-size:14.5px;font-weight:600}
+.item p{margin:4px 0 0;font-size:13.5px;color:var(--ink-60);line-height:1.5}
+.item .why{margin-top:4px;font-size:13px;background:rgba(22,33,44,.045);padding:6px 9px;border-radius:2px;border-left:2px solid var(--hue)}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:10px;padding:2px 7px;border-radius:2px;flex-shrink:0;margin-top:2px;font-weight:500}
+.b-required{background:var(--ink);color:var(--paper)}
+.b-recommended{background:var(--v-need);color:#fff}
+.b-optional{background:transparent;color:var(--ink-60);border:1.5px solid var(--rule)}
+.b-na{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.item.na b,.item.na p{color:var(--ink-30)}
+
+.lld-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.lld-bar h3{font-size:18px;font-weight:700;margin:0;letter-spacing:-.015em;color:var(--v-build)}
+.lld-bar p{margin:2px 0 0;font-size:13.5px;color:var(--ink-60)}
+.expand-all{font:inherit;font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--v-build);border-radius:100px;color:var(--v-build)}
+.expand-all:hover{background:var(--white)}
+.phase{margin:26px 0 12px;display:flex;align-items:center;gap:11px}
+.phase-n{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:3px 9px;border-radius:2px;background:var(--hue);color:#fff;flex-shrink:0}
+.phase-t{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.phase-line{flex:1;height:1.5px;background:var(--rule)}
+.lstep{position:relative;margin:0 0 8px 13px;padding-left:29px;border-left:2px solid var(--rule)}
+.lstep:last-of-type{border-left-color:transparent}
+.lstep::before{content:attr(data-n);position:absolute;left:-14px;top:11px;width:27px;height:27px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--v-build);color:var(--v-build);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lstep.open::before{background:var(--v-build);color:#fff}
+.step-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper-2);
+  border:1.5px solid var(--rule);border-radius:3px;padding:11px 13px;margin-bottom:10px}
+.step-head:hover{background:var(--white)}
+.step-head:focus-visible{outline:3px solid var(--v-build);outline-offset:2px}
+.step-title{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.step-t{font-weight:600;font-size:15px;letter-spacing:-.01em}
+.step-meta{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-60);margin-top:4px;display:block}
+.step-body{display:none;padding:0 0 20px}
+.lstep.open .step-body{display:block}
+.step-body h5{font-size:11px;font-weight:700;margin:0 0 5px;color:var(--hue)}
+.blk{margin-bottom:13px}
+.blk p{margin:0;font-size:13.5px;line-height:1.55}
+.blk ul,.blk ol{margin:0;padding-left:18px}
+.blk li{font-size:13.5px;margin-bottom:5px;line-height:1.5}
+.kv{border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--white)}
+.kv div{display:flex;border-bottom:1px solid var(--rule);font-size:12.5px}
+.kv div:last-child{border-bottom:0}
+.kv dt{flex:0 0 44%;padding:6px 9px;background:var(--paper-2);font-weight:500;margin:0}
+.kv dd{flex:1;padding:6px 9px;margin:0;color:var(--ink-60);font-family:"IBM Plex Mono",monospace;font-size:11.5px;word-break:break-word}
+.gate{background:rgba(22,33,44,.05);border-left:3px solid var(--ink);padding:8px 11px;font-size:13px;line-height:1.5}
+.check{background:rgba(14,122,107,.08);border-left:3px solid var(--l-policy);padding:8px 11px;font-size:13px;line-height:1.5}
+.warn{background:rgba(168,50,40,.07);border-left:3px solid var(--alert);padding:9px 11px;font-size:13.5px;line-height:1.5;margin-top:12px}
+.warn b{color:var(--alert)}
+
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.filters button{font:inherit;font-size:12.5px;font-weight:500;padding:6px 12px;cursor:pointer;
+  background:var(--paper-2);border:1.5px solid var(--rule);border-radius:100px;color:var(--ink-60)}
+.filters button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.deplegend{font-size:12.5px;color:var(--ink-60);padding:10px 13px;background:var(--paper-2);
+  border-left:3px solid var(--ink);margin-bottom:18px;line-height:1.8}
+.comp{margin-bottom:10px;border:1.5px solid var(--rule);border-left:5px solid var(--hue);border-radius:3px;background:var(--paper-2);overflow:hidden}
+.comp-head{width:100%;text-align:left;font:inherit;cursor:pointer;background:transparent;border:0;padding:13px 15px}
+.comp-head:hover{background:var(--white)}
+.comp-title{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.comp-name{font-weight:700;font-size:16px;letter-spacing:-.015em}
+.cat{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--hue);margin-top:4px;display:block}
+.comp-plain{font-size:14px;color:var(--ink-60);margin:5px 0 8px;line-height:1.5}
+.dep{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.dep em{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-30);margin-right:2px}
+.dep i{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:9.5px;padding:2px 7px;border-radius:2px;border:1.5px solid transparent;white-space:nowrap}
+.dep i.disc{background:var(--w-disc);color:#fff}
+.dep i.val{background:var(--w-val);color:#fff}
+.dep i.run{background:var(--w-run);color:#fff}
+.dep i.agent{background:var(--w-agent);color:#fff}
+.dep i.supply{background:var(--w-supply);color:#fff}
+.dep i.prem{background:var(--w-prem);color:#fff}
+.dep i.off{background:transparent;color:var(--ink-30);border:1.5px dashed var(--ink-30)}
+.comp-body{display:none;padding:2px 15px 16px}
+.comp.open .comp-body{display:block}
+.comp.open .comp-head{background:var(--white)}
+.comp-body h4{font-size:11.5px;font-weight:700;color:var(--hue);margin:15px 0 5px}
+.comp-body ul{margin:0;padding-left:17px}
+.comp-body li{font-size:14px;margin-bottom:6px;line-height:1.5}
+.comp-body p.depnote{margin:0;font-size:14px;line-height:1.5}
+
+.ref h3{font-size:17px;font-weight:700;margin:32px 0 9px;padding-bottom:6px;border-bottom:1.5px solid var(--ink);letter-spacing:-.015em}
+.ref h3:first-child{margin-top:0}
+.tbl{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule);border-radius:3px;background:var(--paper-2)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;font-size:11.5px;color:var(--ink-60);border-bottom:1.5px solid var(--ink);background:var(--paper)}
+td:first-child{font-weight:500}
+.note{font-size:13px;color:var(--ink-60);margin:9px 0 0;line-height:1.55}
+.prov{background:var(--paper-2);border-left:3px solid var(--l-connect);padding:11px 13px;font-size:13.5px;line-height:1.6;margin:14px 0}
+.qa{border-left:3px solid var(--w-disc);padding:2px 0 2px 13px;margin:14px 0}
+.qa b{display:block;font-size:14.5px;margin-bottom:2px}
+.qa span{font-size:14px;color:var(--ink-60);line-height:1.55}
+dl.gloss{margin:0;font-size:14px}
+dl.gloss div{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--rule)}
+dl.gloss div:last-child{border-bottom:0}
+dl.gloss dt{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:500;flex:0 0 116px}
+dl.gloss dd{margin:0;color:var(--ink-60);font-size:13.5px;line-height:1.5}
+
+.foot{margin-top:44px;padding-top:15px;border-top:1.5px solid var(--rule);font-size:12.5px;color:var(--ink-60)}
+.hidden{display:none!important}
+@media(min-width:640px){.wrap{padding:42px 30px 100px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="sitebar">
+  <span class="sitemark">Cisco reference</span>
+  <nav class="sitenav" aria-label="Guides">
+    <a href="index.html">Cisco IQ</a>
+    <a href="identity-security.html">Identity Security</a>
+    <a href="ai-defense.html" aria-current="page">AI Defense</a>
+  </nav>
+</div>
+
+<header class="mast">
+  <h1>Cisco AI Defense</h1>
+  <p>Six workflows, each a job someone actually needs done. Pick one to see which components it needs and the order to build them in.</p>
+  <div class="stamp">Built from the AI Defense data sheet (21 May 2026), solution overview, AI PODs reference architecture (6 Mar 2026) and the public user-guide structure</div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" aria-selected="true" data-view="deploy">Workflows</button>
+  <button role="tab" aria-selected="false" data-view="comp">Components</button>
+  <button role="tab" aria-selected="false" data-view="ref">Reference</button>
+</div>
+
+<section id="view-deploy">
+  <p class="step-label">Start here — which job are you doing?</p>
+  <div class="picker" id="picker"></div>
+
+  <div class="subtabs" role="tablist">
+    <button role="tab" aria-selected="true" data-sub="map" style="--hue:var(--v-need)">What you need</button>
+    <button role="tab" aria-selected="false" data-sub="lld" style="--hue:var(--v-build)">Build sequence</button>
+  </div>
+
+  <div id="sub-map">
+    <div class="legend">
+      <span><i class="dot" style="background:var(--ink)"></i> Required</span>
+      <span><i class="dot" style="background:var(--v-need)"></i> Recommended</span>
+      <span><i class="dot" style="background:var(--rule)"></i> Optional</span>
+      <span><i class="dot" style="background:transparent;border:1.5px dashed var(--ink-30)"></i> Not used here</span>
+    </div>
+    <div class="hub" id="hub"></div>
+    <div class="map" id="map"></div>
+  </div>
+
+  <div id="sub-lld" class="hidden">
+    <div class="lld-bar">
+      <div><h3 id="lldTitle"></h3><p id="lldSub"></p></div>
+      <button class="expand-all" id="expandAll">Expand all</button>
+    </div>
+    <div id="lld"></div>
+  </div>
+</section>
+
+<section id="view-comp" class="hidden">
+  <p class="step-label">Filter by layer</p>
+  <div class="filters" id="filters"></div>
+  <p class="deplegend">Each component shows which workflows use it:
+    <span class="dep" style="display:inline-flex;vertical-align:-3px"><i class="disc">Discover</i><i class="val">Validate</i><i class="run">Runtime</i><i class="agent">Agents</i><i class="supply">Supply</i><i class="prem">On-prem</i></span>
+    — filled means it's used, dashed means it isn't.</p>
+  <div id="compList"></div>
+</section>
+
+<section id="view-ref" class="hidden">
+<div class="ref">
+
+  <p class="prov"><b>On provenance.</b> Everything here comes from Cisco's public collateral — the data sheet, solution overview and the AI PODs validated design — plus the publicly visible structure of the AI Defense User Guide. The user guide's <em>body</em> pages require Cisco SSO, so screen-level detail (exact field names inside Policy Studio, DLP profile options, adaptive red teaming scoring) is inferred from the data sheet and the guide's own table of contents rather than read directly. Verify those before putting them in a customer design.</p>
+
+  <h3>Four core components and how they're packaged</h3>
+  <p class="note">The solution overview still describes three components. The current data sheet adds Supply Chain Risk Management as a fourth, and it's the only one gated to the top tier.</p>
+  <div class="tbl"><table>
+    <tr><th>Component</th><th>Validation Essentials</th><th>Runtime Essentials</th><th>Advantage</th></tr>
+    <tr><td>AI Cloud Visibility</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>AI Model and Application Validation</td><td>Yes</td><td>—</td><td>Yes</td></tr>
+    <tr><td>AI Runtime Protection</td><td>—</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>AI Supply Chain Risk Management</td><td>—</td><td>—</td><td>Yes</td></tr>
+  </table></div>
+
+  <h3>Runtime enforcement modes — the choice that shapes everything</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Gateway interception</th><th>Inspection API</th><th>Via Multicloud Defense</th></tr>
+    <tr><td>How traffic reaches it</td><td>AI Defense proxies between app and model</td><td>App explicitly calls the API endpoint</td><td>Network path through MCD</td></tr>
+    <tr><td>Can it block?</td><td>Yes, inline</td><td>No — returns a verdict, your app decides</td><td>Yes, in path</td></tr>
+    <tr><td>App change needed</td><td>Repoint the model URL at the gateway</td><td>Add API call plus handling logic</td><td>None to the app itself</td></tr>
+    <tr><td>Monitoring</td><td>Continuous and inline</td><td>Only when called</td><td>Continuous</td></tr>
+    <tr><td>Best when</td><td>You control the app config and want enforcement</td><td>You need the decision inside your own logic</td><td>You can't touch the app at all</td></tr>
+  </table></div>
+  <p class="note">Cisco is explicit that the API approach does not actively monitor in real time — it evaluates only what you send it. If you need continuous inline monitoring and automatic blocking, that's the gateway.</p>
+
+  <h3>What algorithmic red teaming actually covers</h3>
+  <div class="tbl"><table>
+    <tr><th>Category</th><th>Coverage</th></tr>
+    <tr><td>Total attack techniques and threat subcategories</td><td>200+</td></tr>
+    <tr><td>Prompt injection techniques</td><td>45+</td></tr>
+    <tr><td>Data privacy categories</td><td>30+</td></tr>
+    <tr><td>Security targets</td><td>20+</td></tr>
+    <tr><td>Safety categories</td><td>50+</td></tr>
+  </table></div>
+  <p class="note">The mechanic worth understanding: findings generate <b>model-specific guardrails</b>. Validation output isn't just a report — it becomes the runtime policy. That loop is the core of the product's design and the main argument for buying validation and runtime together rather than separately.</p>
+
+  <h3>Deployment options and data residency</h3>
+  <div class="tbl"><table>
+    <tr><th>Layer</th><th>SaaS</th><th>Customer VPC</th><th>On-prem AI POD</th></tr>
+    <tr><td>Control plane</td><td>Cisco-hosted via Security Cloud Control</td><td>Cisco-hosted</td><td>Cisco-hosted</td></tr>
+    <tr><td>Data plane</td><td>Cisco</td><td>Your AWS, Azure or GCP</td><td>Your data centre on OpenShift</td></tr>
+    <tr><td>Inference traffic</td><td>Reaches Cisco</td><td>Stays in your cloud</td><td>Stays on premises</td></tr>
+    <tr><td>Sent to Cisco</td><td>—</td><td>Management-plane metadata only</td><td>Management-plane metadata only</td></tr>
+    <tr><td>Model exposure</td><td>Model endpoint must be reachable</td><td>Stays in VPC</td><td>Never exposed to the internet</td></tr>
+  </table></div>
+  <p class="note">The hybrid connector runs over a bidirectional gRPC stream encrypted with TLS. The connection is initiated only from the data plane — there are no outbound connection requests from the control plane, and outbound TCP 443 is the only firewall rule required.</p>
+
+  <h3>AI POD sizing</h3>
+  <div class="tbl"><table>
+    <tr><th></th><th>Small</th><th>Medium</th><th>Large</th></tr>
+    <tr><td>Worker hardware</td><td>2× UCS C845A</td><td>2× UCS C845A</td><td>3× UCS C845A</td></tr>
+    <tr><td>GPUs</td><td>4× L40S each</td><td>8× L40S each</td><td>8× L40S each</td></tr>
+    <tr><td>Load supported</td><td>100 req/s, 20 apps</td><td>200 req/s, 40 apps</td><td>300 req/s, 60 apps</td></tr>
+  </table></div>
+  <p class="note">Sizing basis is one AI application running at 5 requests per second with a 2.5k token request. Control plane is either 3× UCS C220 M7 or three VMs on your own vSphere using the OpenShift UPI model, each at 8 vCPU, 32 GB RAM, 120 GB storage, BIOS firmware mode, VMXNET3 adapter and RHCOS ISO boot. OpenShift 4.18 or higher, minimum three control plane and two worker nodes, with the NVIDIA GPU and an Ingress operator installed.</p>
+
+  <h3>Integrations</h3>
+  <div class="tbl"><table>
+    <tr><th>Integration</th><th>What it does</th><th>Used in</th></tr>
+    <tr><td>AWS CloudTrail</td><td>AI asset discovery across AWS</td><td>Discover</td></tr>
+    <tr><td>AWS Bedrock</td><td>LLM API provider integration for discovery and validation</td><td>Discover, Validate</td></tr>
+    <tr><td>Multicloud Defense</td><td>Traffic visibility and a runtime enforcement path</td><td>Discover, Runtime</td></tr>
+    <tr><td>Secure Access</td><td>Third-party and shadow AI app usage by employees</td><td>Discover</td></tr>
+    <tr><td>GitHub</td><td>Repository scanning for the supply chain</td><td>Supply chain</td></tr>
+    <tr><td>Splunk</td><td>Events and violations into the SIEM</td><td>All</td></tr>
+    <tr><td>ServiceNow AI Control Tower</td><td>Risk quantification and policy automation</td><td>All</td></tr>
+    <tr><td>Gemini Enterprise Agent cloud</td><td>Agent-side integration on GCP</td><td>Agents</td></tr>
+    <tr><td>NVIDIA NeMo Guardrails</td><td>Developer-ready runtime protection integration</td><td>Runtime, Agents</td></tr>
+    <tr><td>OpenTelemetry</td><td>Log export to any SIEM from hybrid deployments</td><td>On-prem</td></tr>
+  </table></div>
+
+  <h3>Agent-specific threats named in the documentation</h3>
+  <div class="tbl"><table>
+    <tr><th>Threat</th><th>What it looks like</th></tr>
+    <tr><td>Memory poisoning</td><td>Corrupting an agent's persistent context so later decisions are shaped by planted content</td></tr>
+    <tr><td>Tool misuse</td><td>Using a legitimately available tool for something outside its intended purpose</td></tr>
+    <tr><td>Privilege escalation</td><td>An agent acquiring or exercising access beyond what it was granted</td></tr>
+    <tr><td>Intent hijacking</td><td>Redirecting an agent's goal mid-task, typically through injected instructions</td></tr>
+    <tr><td>Deceptive agent behaviour</td><td>An agent misrepresenting what it did or intends to do</td></tr>
+    <tr><td>Harmful action chains</td><td>Individually permissible tool calls that compose into a damaging sequence</td></tr>
+  </table></div>
+  <p class="note">These matter for scoping because they are behavioural, not access-control, problems. Authorization decides whether a call is allowed; these are about whether an allowed call is legitimate. AI Defense is the behavioural half — pair it with identity controls for the other half.</p>
+
+  <h3>Standards mapping</h3>
+  <div class="tbl"><table>
+    <tr><th>Framework</th><th>Role</th></tr>
+    <tr><td>NIST AI Risk Management Framework</td><td>Risk governance structure for reporting</td></tr>
+    <tr><td>MITRE ATLAS</td><td>Adversarial ML technique taxonomy for validation results</td></tr>
+    <tr><td>OWASP Top 10 for LLM Applications</td><td>Application-layer vulnerability classes</td></tr>
+    <tr><td>Cisco Integrated AI Security and Safety Framework</td><td>Cisco's own framing of adversary objectives and risk exposure</td></tr>
+  </table></div>
+  <p class="note">Cisco states its AI Defense research team contributes to these standards and participates in industry working groups. For regulated buyers the practical value is that validation reports come out pre-mapped, which is the difference between a report and an audit artefact.</p>
+
+  <h3>Quick answers</h3>
+  <div class="qa"><b>Do I need to change my application to use AI Defense?</b><span>For the gateway, yes — you repoint the model URL at the AI Defense gateway. For the Inspection API, you add an explicit call and handle the verdict. Through Multicloud Defense, no change to the app.</span></div>
+  <div class="qa"><b>Can I run validation against a model that isn't exposed to the internet?</b><span>Yes, with a hybrid deployment. That's the main reason the VPC and AI POD data planes exist — the model being tested never needs to be publicly reachable.</span></div>
+  <div class="qa"><b>Does supply chain scanning come with every tier?</b><span>No. Model and MCP scanning is Advantage only. Plan for that early — it's the component most likely to be assumed included.</span></div>
+  <div class="qa"><b>How do validation and runtime relate?</b><span>Validation findings generate model-specific guardrails that runtime then enforces. Buying only one gets you half the loop.</span></div>
+  <div class="qa"><b>Where does shadow AI fit?</b><span>Two different problems. Rogue AI assets in your own cloud are AI Cloud Visibility. Employees using third-party AI apps is Cisco Secure Access, surfaced through Application Discovery.</span></div>
+  <div class="qa"><b>What is the lineage?</b><span>AI Defense is built on Robust Intelligence, founded 2019 in San Francisco, with Cisco's intent announced August 2024 and the deal closing around September 2024. The same technology also underpins Cisco Foundation AI.</span></div>
+
+  <h3>Glossary</h3>
+  <dl class="gloss">
+    <div><dt>AI BOM</dt><dd>AI Bill of Materials — inventory of AI software assets including MCP servers and third-party dependencies. Has its own CLI</dd></div>
+    <div><dt>Algorithmic red teaming</dt><dd>Automated adversarial testing that replaces weeks of manual red teaming, running 200+ techniques</dd></div>
+    <div><dt>Adaptive red teaming</dt><dd>Multi-turn testing that adjusts its approach based on the model's responses, as opposed to standard single-pass testing</dd></div>
+    <div><dt>Application / connection</dt><dd>AI Defense's object model — an application holds one or more connections, each representing an LLM API being protected</dd></div>
+    <div><dt>Policy Studio</dt><dd>Where runtime policies are authored, above the individual guardrails and rules</dd></div>
+    <div><dt>DLP profile</dt><dd>The data-classification set a privacy guardrail enforces — PII, PCI, PHI, source code, model information</dd></div>
+    <div><dt>Hybrid connector</dt><dd>The component installed in your cluster that links your data plane to Cisco's control plane</dd></div>
+    <div><dt>MCP</dt><dd>Model Context Protocol — how agents reach tools and data. Scanned pre-deployment and enforced at runtime</dd></div>
+    <div><dt>Risk profile</dt><dd>Per-asset scoring from supply chain scanning that drives allowlist and blocklist decisions</dd></div>
+    <div><dt>Validation target</dt><dd>The model, application or agent a validation run tests against</dd></div>
+    <div><dt>Custom goal</dt><dd>A domain-specific objective you add to a validation run beyond the built-in categories</dd></div>
+    <div><dt>UPI</dt><dd>User Provisioned Infrastructure — the OpenShift model used when the control plane runs as VMs on your vSphere</dd></div>
+    <div><dt>SCC</dt><dd>Security Cloud Control — the Cisco console AI Defense is reached through</dd></div>
+  </dl>
+
+  <h3>Where to be careful</h3>
+  <ul style="font-size:14px;padding-left:19px">
+    <li><b>The gateway is a traffic path change.</b> Repointing a production application's model URL is a real change with a real rollback plan. Monitor mode first, always.</li>
+    <li><b>The Inspection API doesn't block.</b> Teams choose it because it's less invasive, then assume they have enforcement. They have a verdict; the enforcement is code they still have to write.</li>
+    <li><b>Advantage tier gates supply chain.</b> The single most common scoping surprise.</li>
+    <li><b>On-prem installs are a project, not a task.</b> OpenShift 4.18+, three control plane nodes, two workers, GPU and Ingress operators, DNS, certificates. Treat it like the infrastructure build it is.</li>
+    <li><b>Sizing is per request rate, not per user.</b> The published figures assume 5 req/s at 2.5k tokens per application. Model your own token sizes before choosing a size.</li>
+    <li><b>The user guide is behind SSO.</b> Screen-level detail here is inferred from the data sheet and the guide's structure. Confirm field names before writing a runbook.</li>
+  </ul>
+
+  <h3>Source material</h3>
+  <ul style="font-size:13.5px;padding-left:19px">
+    <li>Cisco AI Defense Data Sheet, updated 21 May 2026</li>
+    <li>Cisco AI Defense Solution Overview and the Securing AI with Cisco AI Defense white paper</li>
+    <li>AI Defense on Cisco AI PODs Reference Architecture (Design Zone validated design), 6 March 2026</li>
+    <li>Cisco AI Defense User Guide structure at securitydocs.cisco.com — body pages require Cisco SSO</li>
+    <li>Cisco Multicloud Defense User Guide, AI Defense integration chapter</li>
+    <li>Cisco newsroom, "Cisco Redefines Security for the Agentic Era", 10 February 2026 — AI BOM, MCP Catalog, adaptive red teaming, agentic guardrails</li>
+    <li>AI Defense API documentation at developer.cisco.com</li>
+  </ul>
+
+</div>
+</section>
+
+<p class="foot">Reflects Cisco material published to late August 2026. AI Defense has shipped major capability expansions roughly every quarter since its January 2025 launch — verify tier packaging and feature availability against current documentation before committing anything to a design.</p>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+var R="required",RC="recommended",O="optional",NA="na";
+
+var MODES=[
+ {id:"disc",hue:"var(--w-disc)",name:"Find the AI you don't know about",
+  forWho:"Inventory every model, agent and AI app across your clouds — and the third-party tools employees are already pasting data into.",
+  owner:"Typically run by: cloud security / SecOps",
+  facts:["all tiers","no app changes","fastest to value"],
+  hub:"Workflow: shadow AI and asset discovery",
+  sub:"10 steps across 4 phases. The lowest-friction starting point — nothing to install and no application changes."},
+ {id:"val",hue:"var(--w-val)",name:"Red team before you ship",
+  forWho:"Run 200+ adversarial techniques against a model or app pre-deployment, then turn the findings into guardrails.",
+  owner:"Typically run by: AI/ML platform engineering with AppSec",
+  facts:["Validation tier","CI/CD friendly","feeds runtime policy"],
+  hub:"Workflow: pre-deployment validation",
+  sub:"10 steps across 4 phases. Fast once the endpoint contract is known — most of the effort is in reading results properly."},
+ {id:"run",hue:"var(--w-run)",name:"Guardrail a production app",
+  forWho:"Inspect prompts and responses in real time and block what violates security, privacy or safety policy.",
+  owner:"Typically run by: application owner with SecOps",
+  facts:["Runtime tier","3 enforcement modes","traffic path change"],
+  hub:"Workflow: runtime protection",
+  sub:"11 steps across 4 phases. The enforcement-mode decision in phase 0 determines everything after it."},
+ {id:"agent",hue:"var(--w-agent)",name:"Govern agents and MCP",
+  forWho:"Discover agents and MCP servers, scan them, then enforce tool-level policy and catch unsafe agent behaviour at runtime.",
+  owner:"Typically run by: platform engineering with security architecture",
+  facts:["Advantage for scanning","MCP inspection","newest capability"],
+  hub:"Workflow: agentic and MCP governance",
+  sub:"11 steps across 4 phases. The fastest-moving area of the product — verify capability availability as you go."},
+ {id:"supply",hue:"var(--w-supply)",name:"Gate the AI supply chain",
+  forWho:"Scan model files, repositories and MCP servers before they enter development, and block high-risk components.",
+  owner:"Typically run by: MLOps with AppSec",
+  facts:["Advantage only","per-asset risk scores","CI/CD gate"],
+  hub:"Workflow: supply chain gating",
+  sub:"10 steps across 4 phases. Simple conceptually — the work is agreeing what score blocks a build."},
+ {id:"prem",hue:"var(--w-prem)",name:"Keep AI inside your walls",
+  forWho:"Run the data plane in your own VPC or on an AI POD so inference traffic and models never leave your environment.",
+  owner:"Typically run by: infrastructure with security architecture",
+  facts:["hybrid connector","OpenShift 4.18+","real infra project"],
+  hub:"Workflow: sovereign and hybrid deployment",
+  sub:"13 steps across 5 phases. The longest build here — it is an infrastructure project with a security outcome."}
+];
+
+var BRANCHES=[
+{id:"tenant",title:"Tenant and entitlement",hue:"var(--l-plat)",items:[
+ {n:"AI Defense subscription",s:{disc:R,val:R,run:R,agent:R,supply:R,prem:R},
+  p:"Validation Essentials, Runtime Essentials or Advantage.",
+  w:"Cloud Visibility is in all three. Validation and Runtime are in their own tier plus Advantage. Supply chain scanning is Advantage only — confirm this before scoping anything that depends on it."},
+ {n:"Security Cloud Control access",s:{disc:R,val:R,run:R,agent:R,supply:R,prem:R},
+  p:"AI Defense is reached through Cisco SCC, not a standalone console.",
+  w:"The control plane is always Cisco-hosted, in every deployment model. Even a fully on-prem data plane is configured from here."},
+ {n:"Projects",s:{disc:O,val:RC,run:RC,agent:O,supply:O,prem:O},
+  p:"Scoping construct for separating work within a tenant.",
+  w:"Worth setting up before you have many applications and validation runs. Retrofitting organisation onto a sprawling tenant is painful."},
+ {n:"API keys",s:{disc:O,val:RC,run:R,agent:O,supply:RC,prem:R},
+  p:"Generated per use, with an expiry date.",
+  w:"The key is shown once. Navigate away from the page and it is gone — store it before you close the dialog, not after."},
+ {n:"Users and roles",s:{disc:R,val:R,run:R,agent:R,supply:R,prem:R},
+  p:"Administration controls who can configure policy versus who can read findings.",
+  w:"Validation and runtime policy are different jobs, usually done by different teams. Split them deliberately rather than granting everyone admin."}
+]},
+{id:"connect",title:"Connecting your environment",hue:"var(--l-connect)",items:[
+ {n:"AWS CloudTrail integration",s:{disc:R,val:O,run:O,agent:RC,supply:O,prem:O},
+  p:"The discovery path for AI assets across AWS.",
+  w:"Discovery reads what CloudTrail already records, so coverage depends on your CloudTrail configuration. Check that before concluding you have no AI assets."},
+ {n:"LLM API provider integration",s:{disc:RC,val:R,run:R,agent:O,supply:O,prem:O},
+  p:"Connects the model providers — Bedrock and others — that applications actually call.",
+  w:"Discovery spans Amazon Bedrock, Google Vertex and Azure AI Foundry. If your models live elsewhere, they come in as external endpoints instead."},
+ {n:"Multicloud Defense",s:{disc:RC,val:NA,run:O,agent:O,supply:NA,prem:O},
+  p:"Traffic visibility across ingress, egress and east-west, and an alternative runtime enforcement path.",
+  w:"The route to runtime protection when you cannot modify the application at all. Requires an AI Defense licence plus MCD onboarding for AWS and Azure."},
+ {n:"Secure Access",s:{disc:RC,val:NA,run:O,agent:NA,supply:NA,prem:NA},
+  p:"Surfaces third-party and unsanctioned AI applications employees are using.",
+  w:"This is a different problem from AI assets in your own cloud, and a different product doing the work. Both land in AI Defense, which is why they get conflated."},
+ {n:"GitHub integration",s:{disc:O,val:O,run:NA,agent:O,supply:R,prem:O},
+  p:"Repository scanning for model files and supply chain assets.",
+  w:"The connection point between AI Defense and where models actually enter your pipeline. Without it, supply chain scanning has nothing to look at."},
+ {n:"Application and connection objects",s:{disc:NA,val:O,run:R,agent:RC,supply:NA,prem:R},
+  p:"AI Defense's object model — an application holds one or more connections, each representing an LLM API.",
+  w:"Model your real topology here. One application per deployed app, one connection per model it calls. Policy attaches to connections, not applications."}
+]},
+{id:"policy",title:"Policy and detection content",hue:"var(--l-policy)",items:[
+ {n:"Policy Studio",s:{disc:NA,val:O,run:R,agent:R,supply:O,prem:R},
+  p:"Where runtime policies are authored, above individual guardrails and rules.",
+  w:"Policies bind to specific connections. A policy with no connection selected protects nothing, and the UI will let you save it."},
+ {n:"Security guardrails",s:{disc:NA,val:O,run:R,agent:R,supply:NA,prem:R},
+  p:"Prompt injection, denial of service, malicious URLs and related attack classes.",
+  w:"The category most likely to generate false positives against a legitimate app that discusses security topics. Tune in monitor mode before enabling block."},
+ {n:"Privacy guardrails and DLP profiles",s:{disc:NA,val:O,run:R,agent:RC,supply:NA,prem:R},
+  p:"PII, PCI, PHI, source code and model information leakage.",
+  w:"The control that most regulated customers actually buy this for. Match the profile set to the regime you are being audited against, not to the defaults."},
+ {n:"Safety guardrails",s:{disc:NA,val:O,run:R,agent:O,supply:NA,prem:R},
+  p:"Toxic or harmful content across financial, societal, reputational and user categories.",
+  w:"Highly context-dependent. What counts as harmful in a consumer chatbot and in an internal analyst tool are not the same thing."},
+ {n:"Model-specific guardrails",s:{disc:NA,val:R,run:RC,agent:O,supply:NA,prem:RC},
+  p:"Guardrails generated from what validation actually found in your model.",
+  w:"This is the loop that justifies buying validation and runtime together. Generic guardrails protect against generic attacks; these protect against the ones your model demonstrably failed."},
+ {n:"MCP runtime guardrails",s:{disc:NA,val:NA,run:O,agent:R,supply:RC,prem:O},
+  p:"Enforcement across MCP requests and responses, with tool allowlists and blocklists.",
+  w:"Allow and block lists derive from risk profiles assigned during MCP validation. Scanning and runtime are designed to feed each other — using one without the other loses most of the value."},
+ {n:"Agent behaviour protection",s:{disc:NA,val:O,run:O,agent:R,supply:NA,prem:O},
+  p:"Detects unauthorized tool usage, privilege escalation, harmful action chains and deceptive behaviour.",
+  w:"Behavioural, not access control. An authorized tool call can still be a manipulated one — this catches the second case, identity controls catch the first."}
+]},
+{id:"deploy",title:"Data plane and enforcement points",hue:"var(--l-deploy)",items:[
+ {n:"SaaS data plane",s:{disc:R,val:RC,run:RC,agent:RC,supply:RC,prem:NA},
+  p:"Cisco-hosted processing for validation and runtime. Nothing to deploy.",
+  w:"Fastest path by a wide margin. The trade-off is that model endpoints must be reachable and inference traffic reaches Cisco."},
+ {n:"Hybrid connector",s:{disc:NA,val:O,run:O,agent:O,supply:O,prem:R},
+  p:"Installed in your cluster via Cisco-provided Helm charts; links your data plane to Cisco's control plane.",
+  w:"Bidirectional gRPC over TLS, initiated only from the data plane. Outbound TCP 443 is the only firewall rule needed, which makes the security review straightforward."},
+ {n:"Kubernetes cluster",s:{disc:NA,val:O,run:O,agent:O,supply:O,prem:R},
+  p:"EKS, AKS, GKE, or OpenShift 4.18+ on an AI POD.",
+  w:"On AI PODs this is a full OpenShift build: three control plane nodes, two workers, NVIDIA GPU and Ingress operators. Budget for it as infrastructure work."},
+ {n:"Runtime gateway",s:{disc:NA,val:NA,run:R,agent:RC,supply:NA,prem:RC},
+  p:"Proxy between the application and its model. Logs events and blocks violations inline.",
+  w:"Requires repointing the application's model URL. If you cannot change the app config, this mode is off the table and you are choosing between the API and Multicloud Defense."},
+ {n:"Inspection API",s:{disc:NA,val:NA,run:O,agent:O,supply:NA,prem:O},
+  p:"On-demand evaluation. Returns a verdict; enforcement stays in your application.",
+  w:"Explicitly not real-time monitoring. Teams pick it because it is less invasive, then assume they have enforcement — they have a verdict and code they still need to write."},
+ {n:"Ingress and DNS",s:{disc:NA,val:NA,run:O,agent:O,supply:NA,prem:R},
+  p:"Two services need exposing on-prem: the API gateway and the proxy service.",
+  w:"An Ingress operator is a hard requirement for on-prem runtime. Without it the proxy and API endpoints are unreachable and runtime silently does nothing."}
+]},
+{id:"ops",title:"Evidence, telemetry and operations",hue:"var(--l-ops)",items:[
+ {n:"Violations and events dashboard",s:{disc:O,val:O,run:R,agent:R,supply:O,prem:R},
+  p:"Violation types, the prompts and responses involved, and surrounding context.",
+  w:"Your monitor-mode tuning surface. Live here for the first fortnight of any runtime deployment before you enable blocking."},
+ {n:"Validation reports",s:{disc:NA,val:R,run:O,agent:RC,supply:O,prem:O},
+  p:"Standards-mapped output covering model, application and agent vulnerabilities.",
+  w:"Pre-mapped to OWASP LLM Top 10 and MITRE ATLAS, which is what turns a test result into an audit artefact rather than an engineering ticket."},
+ {n:"AI Bill of Materials",s:{disc:RC,val:O,run:O,agent:R,supply:R,prem:O},
+  p:"Inventory of AI software assets including MCP servers and third-party dependencies. Has its own CLI.",
+  w:"Answers where an asset came from, which is a different question from what assets exist. Both are needed before you can write meaningful policy."},
+ {n:"Splunk integration",s:{disc:RC,val:O,run:RC,agent:RC,supply:O,prem:RC},
+  p:"Events and violations into the SIEM alongside the rest of security telemetry.",
+  w:"AI events in an isolated console get ignored. Landing them where analysts already work is the difference between a control and a dashboard."},
+ {n:"ServiceNow AI Control Tower",s:{disc:O,val:O,run:O,agent:O,supply:O,prem:O},
+  p:"Risk quantification and policy automation against enterprise risk management.",
+  w:"The path from a technical finding to a tracked, owned risk item. Relevant where AI governance sits with a risk function rather than security."},
+ {n:"OpenTelemetry log export",s:{disc:NA,val:NA,run:O,agent:O,supply:NA,prem:RC},
+  p:"Log export to any SIEM from hybrid deployments.",
+  w:"The route out for on-prem installs where the SaaS Splunk integration does not apply. Standard OpenShift logging works as an alternative."}
+]}];
+
+var LLD={
+disc:[
+{p:"Phase 0",t:"Prerequisites",hue:"var(--l-plat)",steps:[
+ {t:"Confirm the subscription and activate the tenant",meta:"Security Cloud Control · hours",
+  where:"Cisco's control plane. Discovery works on every tier, which is why this is the natural first workflow.",
+  needs:["An AI Defense subscription of any tier","Access to Cisco Security Cloud Control"],
+  actions:["Confirm which tier you hold — Cloud Visibility is included in Validation Essentials, Runtime Essentials and Advantage alike.","Activate AI Defense and reach the dashboard through SCC.","Add the users who will read findings, separately from those who will configure."],
+  kv:[["Console","Cisco Security Cloud Control"],["Tier needed","any"],["App changes","none"]],
+  verify:"You reach the AI Defense dashboard and can open the Assets area.",
+  gates:"Every other workflow on this page."},
+ {t:"Decide what discovery means here",meta:"Scoping · half a day",
+  where:"A scoping conversation, because two different problems both get called shadow AI.",
+  needs:["Agreement on which clouds are in scope","Agreement on whether employee AI app usage is in scope"],
+  actions:["Separate the two questions: AI assets running in <b>your</b> cloud accounts, versus third-party AI apps <b>your employees</b> use.","The first is AI Cloud Visibility. The second is Cisco Secure Access surfaced through Application Discovery — a different product doing the work.","Decide whether you are scoping one, or both. They have different owners and different approval paths."],
+  kv:[["Your cloud assets","AI Cloud Visibility"],["Employee app usage","Secure Access + Application Discovery"],["Clouds covered","Bedrock · Vertex · Azure AI Foundry"]],
+  verify:"A written scope naming which of the two problems you are solving.",
+  gates:"Which integrations you configure next.",
+  warn:"Conflating these two is the most common scoping error on this workflow. They produce different findings, land with different teams, and one of them needs a separate product."}
+]},
+{p:"Phase 1",t:"Connect the clouds",hue:"var(--l-connect)",steps:[
+ {t:"Enable the AWS CloudTrail integration",meta:"Integrations → AWS · 1–2 hours plus approvals",
+  where:"AWS, then AI Defense. Discovery reads what CloudTrail already records.",
+  needs:["AWS admin able to grant the required permissions","CloudTrail enabled in the accounts in scope"],
+  actions:["Add the AWS integration for AI asset discovery.","Enable the CloudTrail integration per account.","Confirm CloudTrail is actually recording in the regions where AI workloads run — discovery cannot see what CloudTrail does not log."],
+  kv:[["Mechanism","CloudTrail-based discovery"],["Scope","per AWS account"],["Coverage limit","whatever CloudTrail records"]],
+  verify:"AI assets begin appearing in the AI Inventory.",
+  gates:"Any AWS coverage in the inventory.",
+  warn:"An empty result is ambiguous — it can mean no AI assets, or CloudTrail not recording in that region. Check the second before reporting the first."},
+ {t:"Add the model provider integrations",meta:"Integrations → LLM API Providers · 1 hour",
+  where:"The provider side, so discovery sees the models applications actually call.",
+  needs:["Provider admin access","Bedrock model IDs if applicable"],
+  actions:["Connect AWS Bedrock, and any other providers in use.","Confirm coverage across Amazon Bedrock, Google Vertex and Azure AI Foundry as relevant.","Note anything hosted outside these — it comes in as an external endpoint rather than a discovered asset."],
+  kv:[["Discovered natively","Bedrock · Vertex · Azure AI Foundry"],["Everything else","external endpoint, added manually"]],
+  verify:"Models appear in the inventory with their provider attributed.",
+  gates:"Validation and runtime, which both work against these endpoints."},
+ {t:"Add Multicloud Defense for traffic visibility",meta:"Integrations → Multicloud Defense · half a day",
+  where:"The network layer, adding flow-level visibility on top of asset discovery.",
+  needs:["An AI Defense licence","An MCD tenant","AWS or Azure onboarded to MCD"],
+  actions:["Log into the Multicloud Defense tenant and generate an API key from the dashboard.","Connect the MCD tenant to AI Defense.","Onboard the cloud service provider to MCD with the correct account permissions, then enable Traffic Visibility."],
+  kv:[["Discovery scope","AWS and Azure"],["Adds","ingress, egress and east-west AI traffic"],["Also enables","a runtime enforcement path later"]],
+  verify:"AI-related traffic flows appear alongside the asset inventory.",
+  gates:"Traffic flow mapping, and the MCD runtime option if you take it later."}
+]},
+{p:"Phase 2",t:"See what employees are using",hue:"var(--l-connect)",steps:[
+ {t:"Connect Secure Access for third-party AI app usage",meta:"Integrations → Secure Access · varies",
+  where:"A different product entirely, surfaced inside AI Defense.",
+  needs:["Cisco Secure Access deployed","Employee traffic actually traversing it"],
+  actions:["Enable the Secure Access integration.","Use Application Discovery to track AI application use across the workforce.","Separate sanctioned from unsanctioned, then decide the policy response — block, warn, or accept and monitor."],
+  kv:[["Product doing the work","Cisco Secure Access"],["Surfaced in","Application Discovery"],["Answers","which third-party AI apps are in use"]],
+  verify:"Third-party AI application usage appears with per-app visibility.",
+  gates:"Any conversation about employee AI usage policy.",
+  warn:"This depends entirely on Secure Access already being deployed and in the traffic path. If it is not, this half of the workflow is a separate project, not a configuration step."}
+]},
+{p:"Phase 3",t:"Work the inventory",hue:"var(--l-ops)",steps:[
+ {t:"Read the AI Inventory",meta:"Assets → AI Inventory · 2–4 hours",
+  where:"The consolidated view across everything connected.",
+  needs:["At least one integration returning data"],
+  actions:["Work through discovered models, agents and applications.","Flag anything unsanctioned — assets nobody in security knew existed are the point of this exercise.","Map connections across data, models and agents to understand the attack surface rather than just the asset count."],
+  kv:[["Shows","models · agents · applications · data sources"],["Also maps","AI traffic flows"]],
+  verify:"An inventory that surprises someone. If it matches expectations exactly, coverage is probably incomplete.",
+  gates:"Prioritisation."},
+ {t:"Run the AI asset policy check",meta:"Assets · 1–2 hours",
+  where:"The bridge from inventory to action.",
+  needs:["Inventory populated"],
+  actions:["Use the asset policy check to track which assets have been assessed and which have not.","Identify unprotected assets and initiate scans or guardrails for them.","Review each model's existing AI security controls to see what is already covered."],
+  kv:[["Function","track and prioritise assessed assets"],["Triggers","scans and guardrails for unprotected assets"]],
+  verify:"A prioritised list of assets needing validation or runtime protection.",
+  gates:"The validation and runtime workflows — this is where they get their target list."},
+ {t:"Build the AI BOM",meta:"Assets → AI Bill of Materials · varies",
+  where:"A parallel question — not what exists, but what it is built from.",
+  needs:["Assets discovered"],
+  actions:["Generate the AI BOM covering AI software assets, MCP servers and third-party dependencies.","Use the AI BOM CLI where you need this in a pipeline rather than the console.","Cross-reference against the inventory — an asset and its dependency chain are two views of the same risk."],
+  kv:[["Covers","AI software assets · MCP servers · dependencies"],["Interfaces","console and CLI"]],
+  verify:"You can answer where a given AI asset came from.",
+  gates:"Meaningful supply chain and agent policy."}
+]},
+{p:"Phase 4",t:"Operate",hue:"var(--l-ops)",steps:[
+ {t:"Wire findings into the SIEM and risk register",meta:"Integrations · half a day",
+  where:"Where the findings need to live to actually get acted on.",
+  needs:["Splunk or another SIEM","Optionally ServiceNow"],
+  actions:["Enable the Splunk integration so AI findings sit with the rest of security telemetry.","Connect ServiceNow AI Control Tower if AI governance sits with a risk function.","Agree who owns a newly discovered unsanctioned asset — the discovery is worthless without an owner."],
+  kv:[["SIEM","Splunk integration"],["Risk","ServiceNow AI Control Tower"]],
+  verify:"A discovered asset generates a tracked item with a named owner.",
+  gates:"Sustained value. Discovery without a workflow decays within a quarter."},
+ {t:"Set the re-discovery rhythm",meta:"Ongoing · continuous",
+  where:"Process. AI estates grow faster than any other asset class right now.",
+  needs:["A named owner","A review cadence"],
+  actions:["Treat discovery as continuous rather than a one-off audit — new AI assets appear between reviews, not during them.","Re-check integration coverage as new cloud accounts and regions come online.","Track the ratio of assessed to unassessed assets over time as your actual progress metric."],
+  kv:[["Cadence","continuous, reviewed monthly"],["Metric","assessed vs unassessed ratio"]],
+  verify:"New AI assets surface within days, not at the next audit.",
+  gates:"Nothing — end state."}
+]}],
+
+val:[
+{p:"Phase 0",t:"Prerequisites",hue:"var(--l-plat)",steps:[
+ {t:"Confirm entitlement and pick the first target",meta:"Scoping · hours",
+  where:"Validation needs Validation Essentials or Advantage. Runtime Essentials alone does not include it.",
+  needs:["Validation Essentials or Advantage","A model, application or agent to test"],
+  actions:["Confirm the tier. This is a common surprise for customers who bought Runtime Essentials expecting red teaming.","Pick a first target with a real owner who will act on findings — a test with no owner produces a report nobody reads.","Decide whether you are testing a model, a full application, or an agent. They produce different findings."],
+  kv:[["Tier required","Validation Essentials or Advantage"],["Targets","models · applications · agents"]],
+  verify:"A named target and a named owner.",
+  gates:"Everything else in this workflow."},
+ {t:"Gather the endpoint contract",meta:"Engineering · 1–2 hours",
+  where:"With whoever owns the model endpoint. This is the step people underestimate.",
+  needs:["The endpoint URL including path","The header structure","The request payload structure","The response path"],
+  actions:["Collect the target endpoint URL. HTTPS is preferred; HTTP works but is not recommended.","Capture the exact header structure the endpoint expects.","Capture the request body template.","Determine the path to the model response. <code>choices.0.message.contents</code> is the default for most models — confirm rather than assume."],
+  kv:[["Endpoint","https:// preferred"],["Default response path","choices.0.message.contents"],["Needed","headers and body template"]],
+  verify:"You can call the endpoint successfully by hand with the values you collected.",
+  gates:"Configuring the validation target.",
+  warn:"A wrong response path produces a validation run that appears to work and returns meaningless results. Test the endpoint manually first."}
+]},
+{p:"Phase 1",t:"Configure the run",hue:"var(--l-connect)",steps:[
+ {t:"Create the validation target",meta:"Validation → Run Validation · 30 min",
+  where:"The AI Defense validation area.",
+  needs:["The endpoint contract from step 2"],
+  actions:["From Validation, select <b>+ Run Validation</b>.","Choose the asset type — external for a model you host, or a connected provider asset.","Enter the test name, target endpoint, request body template and path to model response.","Set the API provider and HTTP headers as required."],
+  kv:[["Asset type","External, or a connected provider"],["Required","endpoint · body template · response path"]],
+  verify:"The target saves without error.",
+  gates:"Running the test."},
+ {t:"Choose standard or adaptive red teaming",meta:"Validation profiles · design decision",
+  where:"The profile selection, and the choice that determines what you learn.",
+  needs:["An understanding of what you are trying to prove"],
+  actions:["<b>Standard</b> red teaming runs the technique library in a single pass — broad coverage, faster.","<b>Adaptive</b> testing runs multi-turn, adjusting its approach based on how the model responds. Slower, and closer to how a real attacker behaves.","Multi-turn adaptive testing across multiple languages was the headline addition in the February 2026 expansion — use it where the app faces non-English users."],
+  kv:[["Standard","single-pass, broad"],["Adaptive","multi-turn, adjusts to responses"],["Languages","multiple, per the 2026 expansion"]],
+  verify:"A profile chosen with a reason you could defend.",
+  gates:"How you read the results in step 6."},
+ {t:"Add custom goals for your domain",meta:"Validation → Custom Goals · varies",
+  where:"On top of the built-in categories.",
+  needs:["Domain knowledge of what a bad outcome looks like for this application"],
+  actions:["Define goals specific to your use case beyond the standard 200+ techniques.","Focus on outcomes the generic library cannot know about — disclosing an internal pricing rule, generating unauthorised advice, revealing another customer's data.","Keep the first set small. Custom goals are where subject-matter time gets spent, and a long list stalls the run."],
+  kv:[["Built-in coverage","200+ techniques and subcategories"],["Custom goals","your domain-specific failures"]],
+  verify:"Two or three goals that the built-in library would not have caught.",
+  gates:"Nothing — but this is where a generic test becomes a relevant one."}
+]},
+{p:"Phase 2",t:"Run and read",hue:"var(--l-policy)",steps:[
+ {t:"Run the validation test",meta:"Validation · minutes to hours",
+  where:"Against the live endpoint. It sends real adversarial traffic.",
+  needs:["Target configured","Awareness from the endpoint owner that testing is happening"],
+  actions:["Submit the run and monitor its status from the Validation area.","Tell the endpoint owner beforehand — this generates a spike of adversarial traffic and will look like an attack in their logs, because it is one.","Watch for rate limiting or cost implications on metered endpoints."],
+  kv:[["Coverage","200+ attack techniques"],["Breakdown","45+ prompt injection · 30+ privacy · 20+ security · 50+ safety"]],
+  verify:"The run completes and results populate.",
+  gates:"Everything downstream.",
+  warn:"Run this against a non-production endpoint first if you can. It is real adversarial traffic against a real model, with real token costs."},
+ {t:"Read results by category, not by count",meta:"Validation results · 2–4 hours",
+  where:"The results view. How you read this determines whether anyone acts on it.",
+  needs:["A completed run"],
+  actions:["Work the four families separately — prompt injection, data privacy, security and safety fail for different reasons and get fixed by different people.","For adaptive runs, look at the conversation path, not just the outcome. How the model was walked into failing is the actionable part.","Separate model-level failures from application-level ones. A model weakness may be unfixable; the application wrapping it usually is not."],
+  kv:[["Families","injection · privacy · security · safety"],["Adaptive results","read the path, not just the verdict"]],
+  verify:"Findings assigned to whoever can actually fix each one.",
+  gates:"Guardrail generation."}
+]},
+{p:"Phase 3",t:"Turn findings into controls",hue:"var(--l-deploy)",steps:[
+ {t:"Generate model-specific guardrails",meta:"Validation → runtime handoff · 1 hour",
+  where:"The join between validation and runtime. This is the product's central mechanic.",
+  needs:["Validation results","Runtime entitlement to use them"],
+  actions:["Generate guardrails tailored to the vulnerabilities this specific model demonstrated.","Compare against the generic guardrail set — the model-specific ones address failures you have evidence of, not hypotheses.","Hand them to whoever owns the runtime policy for that application."],
+  kv:[["Input","this model's actual failures"],["Output","guardrails scoped to them"]],
+  verify:"A guardrail set traceable back to a specific validation finding.",
+  gates:"An evidence-based runtime policy rather than a default one.",
+  warn:"If you hold Validation Essentials without runtime, you can generate these but not enforce them. That gap is worth surfacing at scoping, not at handover."},
+ {t:"Wire validation into CI/CD",meta:"Pipeline integration · days",
+  where:"Your build pipeline, so this stops being a one-off exercise.",
+  needs:["An API key","Pipeline access"],
+  actions:["Generate an API key with an appropriate expiry and store it immediately — it is shown once.","Add a validation run as a pipeline stage on model or prompt changes.","Decide what result fails a build. A test that never blocks anything is monitoring, not a gate."],
+  kv:[["Auth","API key, single display"],["Trigger","model or prompt change"],["Decision needed","what fails the build"]],
+  verify:"A pipeline run produces validation results automatically.",
+  gates:"Sustained coverage as models change."}
+]},
+{p:"Phase 4",t:"Evidence",hue:"var(--l-ops)",steps:[
+ {t:"Export the standards-mapped report",meta:"Reporting · 1 hour",
+  where:"Where this stops being an engineering artefact and becomes an audit one.",
+  needs:["Completed runs"],
+  actions:["Export reports mapped to OWASP Top 10 for LLM Applications and MITRE ATLAS.","Use the NIST AI-RMF alignment where your governance framework is risk-based rather than control-based.","Keep the first run as a baseline so later runs show a delta rather than an absolute."],
+  kv:[["Mapped to","OWASP LLM Top 10 · MITRE ATLAS · NIST AI-RMF"],["Keep","the first run as baseline"]],
+  verify:"A report someone in risk or compliance can use without translation.",
+  gates:"Nothing — end state."}
+]}],
+
+run:[
+{p:"Phase 0",t:"Choose the enforcement mode first",hue:"var(--l-plat)",steps:[
+ {t:"Pick gateway, API or Multicloud Defense",meta:"Design decision · the fork that shapes everything",
+  where:"A design decision that determines the entire rest of this workflow.",
+  needs:["Knowledge of whether you can change the application's configuration","Agreement on whether you need blocking or just visibility"],
+  actions:["<b>Gateway:</b> AI Defense proxies between app and model. Blocks inline. Requires repointing the model URL.","<b>Inspection API:</b> your app calls AI Defense explicitly and acts on the verdict. Does not block by itself and does not monitor continuously.","<b>Multicloud Defense:</b> enforcement in the network path, no application change at all.","If you need continuous inline monitoring and automatic blocking, Cisco's guidance is unambiguous — use the gateway."],
+  kv:[["Gateway","blocks inline, needs app config change"],["API","verdict only, your code enforces"],["MCD","in-path, no app change"]],
+  verify:"A decision written down with the constraint that drove it.",
+  gates:"Every subsequent step differs by mode.",
+  warn:"The API mode is chosen because it feels lower risk, then treated as if it enforces. It returns a response your application must act on. If nobody writes that handling code, you have logging."},
+ {t:"Confirm the tier and the traffic path",meta:"Prerequisites · hours",
+  where:"Entitlement and network reality.",
+  needs:["Runtime Essentials or Advantage","Confirmation the app can reach the chosen enforcement point"],
+  actions:["Confirm Runtime Essentials or Advantage.","For gateway mode, confirm the application can reach the AI Defense gateway endpoint and that you can modify the application config.","For on-prem, confirm the ingress path exists — without an Ingress operator the proxy endpoint is unreachable."],
+  kv:[["Tier","Runtime Essentials or Advantage"],["Gateway needs","app can reach it, and you can reconfigure the app"]],
+  verify:"A confirmed network path from app to enforcement point.",
+  gates:"Cutover."}
+]},
+{p:"Phase 1",t:"Model the application",hue:"var(--l-connect)",steps:[
+ {t:"Create the application object",meta:"Applications → Add Application · 15 min",
+  where:"AI Defense's object model. Get this right and policy management stays simple.",
+  needs:["A name and description that will still make sense in six months"],
+  actions:["From the dashboard go to <b>Applications</b>, then <b>+ Add Application</b>.","Set the connection type — Gateway or API.","Save. One application object can hold multiple connections if it calls more than one model."],
+  kv:[["Path","Applications → + Add Application"],["Holds","one or more connections"]],
+  verify:"The application object appears and can accept connections.",
+  gates:"Connections and policy."},
+ {t:"Add the endpoint and connection",meta:"Applications → Add Connection · 30 min",
+  where:"Where you tell AI Defense which model this application actually calls.",
+  needs:["The AI model URL the application currently uses"],
+  actions:["Select <b>Add Connection</b>, then <b>Add or manage endpoint</b>, then <b>Add Endpoint</b>.","Choose the model provider — External Model for a self-hosted endpoint.","Enter the model URL currently used by the application and save.","Return to Add Connection, select the endpoint just created, name the connection and save."],
+  kv:[["Provider options","connected provider, or External Model"],["Enter","the URL the app uses today"]],
+  verify:"The connection appears under the application.",
+  gates:"Policy binding — policies attach to connections, not applications.",
+  warn:"Model one connection per model the app calls. Collapsing several models into one connection means you cannot apply different policies to different risk levels later."}
+]},
+{p:"Phase 2",t:"Build the policy",hue:"var(--l-policy)",steps:[
+ {t:"Create the policy and bind it",meta:"Policies → Create Policy · 1 hour",
+  where:"Policy Studio. The binding step is where policies quietly fail.",
+  needs:["The connection from step 4"],
+  actions:["From <b>Policies</b>, select <b>Create Policy</b>.","Enter name, description and language.","Select the enforcement type at the top, then explicitly select the connection created earlier.","Work through the guardrail sections, then review the policy summary before saving."],
+  kv:[["Path","Policies → Create Policy"],["Critical step","selecting the connection"]],
+  verify:"The policy shows as enabled and bound to your connection.",
+  gates:"Any protection at all.",
+  warn:"A policy with no connection selected saves happily and protects nothing. Check the binding, not just that the policy exists."},
+ {t:"Configure DLP profiles",meta:"Policies → DLP Profiles · 1–2 hours",
+  where:"The privacy guardrails, and usually the reason regulated customers buy this.",
+  needs:["Knowledge of which data classes matter for your regime"],
+  actions:["Enable the profiles that match your obligations — PII, PCI, PHI, source code, model information.","Match the profile set to the regime you are audited against rather than accepting defaults.","Consider prompt and response separately. Leaking data <em>into</em> a model and leaking it <em>out</em> are different exposures with different owners."],
+  kv:[["Classes","PII · PCI · PHI · source code · model info"],["Directions","prompt and response, set independently"]],
+  verify:"A deliberate profile set you could justify to an auditor.",
+  gates:"Compliance evidence."},
+ {t:"Set security and safety guardrails",meta:"Policies · 1–2 hours",
+  where:"The other two guardrail families.",
+  needs:["An understanding of the application's actual subject matter"],
+  actions:["Enable security guardrails for prompt injection, denial of service and malicious URLs.","Enable safety guardrails across the financial, societal, reputational and user categories, tuned to context — a consumer chatbot and an internal analyst tool need different thresholds.","Where you have validation results, apply the model-specific guardrails generated from them rather than only the generic set.","Set every guardrail to monitor rather than block for now."],
+  kv:[["Security","injection · DoS · malicious URLs"],["Safety","financial · societal · reputational · user"],["Initial mode","monitor, not block"]],
+  verify:"The policy summary reflects your intent before you enable it.",
+  gates:"Cutover."}
+]},
+{p:"Phase 3",t:"Cut over carefully",hue:"var(--l-deploy)",steps:[
+ {t:"Repoint the application, or integrate the API",meta:"Application change · with change control",
+  where:"The application itself. This is a production traffic path change.",
+  needs:["Change approval","A rollback plan"],
+  actions:["<b>Gateway:</b> open the connection's <b>Connection Guide</b> and copy the Gateway URL. For on-prem, replace the host with your proxy service URL. Replace the model URL in the application with this value.","<b>API:</b> integrate using the API URL plus the inspect path, authenticating with the API key you generated. Write the code that acts on the verdict.","Roll out to a non-production instance first.","Keep the original model URL to hand. Rollback is repointing it back."],
+  kv:[["Gateway URL","from the Connection Guide"],["On-prem host","your ai-defense-proxy-service URL"],["API path","/api/v1/inspect"]],
+  verify:"Traffic flows normally through the new path with no functional change.",
+  gates:"Live protection.",
+  warn:"All AI requests now proxy through AI Defense. That is a new dependency in your application's critical path. Confirm the availability characteristics before production cutover."},
+ {t:"Run in monitor mode",meta:"Operations · 1–2 weeks",
+  where:"The events dashboard, watching what would have been blocked.",
+  needs:["Traffic flowing through the enforcement point"],
+  actions:["Leave everything on monitor and watch real traffic for a fortnight.","Work the violations dashboard — violation types, the prompts and responses involved, and context.","Identify false positives. Applications that legitimately discuss security or finance will trip the guardrails built to catch those topics."],
+  kv:[["Duration","1–2 weeks minimum"],["Watch","violation types and affected prompts"]],
+  verify:"A false-positive rate you would accept if it started blocking tomorrow.",
+  gates:"Enabling block.",
+  warn:"Skipping monitor mode is how a security control gets switched off permanently after one bad week. Two weeks of monitoring buys years of the control staying enabled."},
+ {t:"Enable blocking, guardrail by guardrail",meta:"Policy change · staged over weeks",
+  where:"Back in the policy, converting monitoring into enforcement.",
+  needs:["Monitor-mode data","App owner agreement per category"],
+  actions:["Enable block on the highest-confidence, lowest-false-positive categories first — usually privacy and injection.","Leave the noisier safety categories on monitor until tuned.","Communicate to the application owner what users will see when a request is blocked."],
+  kv:[["Enable first","privacy and prompt injection"],["Enable last","context-dependent safety categories"]],
+  verify:"A deliberate test violation is blocked and appears in the events log.",
+  gates:"Nothing — this is the working state."}
+]},
+{p:"Phase 4",t:"Operate",hue:"var(--l-ops)",steps:[
+ {t:"Land events in the SIEM and set the tuning rhythm",meta:"Ongoing · monthly",
+  where:"Operations. Runtime policy is not set-and-forget.",
+  needs:["Splunk or another SIEM","A named policy owner"],
+  actions:["Enable the Splunk integration, or OpenTelemetry export for hybrid deployments.","Review violation trends monthly — a rising false-positive rate usually means the application changed, not the policy.","Re-run validation after significant model or prompt changes and refresh the model-specific guardrails."],
+  kv:[["SaaS export","Splunk integration"],["Hybrid export","OpenTelemetry to any SIEM"],["Review","monthly"]],
+  verify:"An analyst sees AI violations alongside other security events without switching tools.",
+  gates:"Nothing — end state."}
+]}],
+
+agent:[
+{p:"Phase 0",t:"Scope the agent estate",hue:"var(--l-plat)",steps:[
+ {t:"Confirm entitlement and capability availability",meta:"Prerequisites · days",
+  where:"Entitlement, plus a genuine currency check.",
+  needs:["Advantage for MCP and model scanning","Runtime entitlement for MCP guardrails"],
+  actions:["Confirm Advantage if supply chain scanning of MCP servers is in scope — that component is Advantage only.","Verify current capability availability with your Cisco team. The agentic features expanded substantially in February 2026 and have moved since.","Note that the user guide's agentic pages are behind SSO, so confirm screen-level detail rather than working from collateral."],
+  kv:[["MCP scanning","Advantage tier"],["MCP runtime guardrails","Runtime capability"],["Currency","verify — this area moves quarterly"]],
+  verify:"A written answer on what is available in your tenant today.",
+  gates:"Everything. This is the fastest-changing part of AI Defense.",
+  warn:"Do not build a customer design around an agentic capability you have not seen working in the current release. This area changed materially more than once during 2026."},
+ {t:"Decide first-party versus third-party scope",meta:"Scoping workshop · half a day",
+  where:"With the teams building agents, who may not have met the security team.",
+  needs:["A list of agent frameworks and platforms in use","Owners for each"],
+  actions:["Separate agents you build from third-party agentic platforms and widely used AI applications.","Identify which MCP servers are internal and which are public.","Establish who owns agent deployment today — frequently the answer is nobody, which is itself the finding."],
+  kv:[["Scope","first-party · third-party platforms · AI applications"],["MCP","public and private registries"]],
+  verify:"An inventory of platforms with named owners.",
+  gates:"Discovery configuration."}
+]},
+{p:"Phase 1",t:"Discover",hue:"var(--l-connect)",steps:[
+ {t:"Turn on MCP and agent discovery",meta:"AI Cloud Visibility · days",
+  where:"The discovery layer, extended to agentic assets.",
+  needs:["Cloud integrations already configured"],
+  actions:["Enable automatic identification of MCP servers, agent processes and tool integrations in cloud environments.","Review the mapped MCP-connected workflows and agent-to-tool interactions.","Look specifically for hidden or unsanctioned agentic behaviour — workflows nobody registered."],
+  kv:[["Discovers","MCP servers · agent processes · tool integrations"],["Maps","agent-to-tool interactions"]],
+  verify:"Agentic assets appear alongside models in the inventory.",
+  gates:"Scanning and policy — you cannot govern what you have not found."},
+ {t:"Build the MCP catalogue and AI BOM",meta:"Assets · days",
+  where:"The supply-chain view of the agent estate.",
+  needs:["Discovery returning data"],
+  actions:["Use the MCP Catalog to inventory MCP servers and registries across public and private platforms.","Generate the AI BOM covering AI software assets, MCP servers and third-party dependencies.","Cross-reference the two — what agents use, and what those things are built from."],
+  kv:[["MCP Catalog","servers and registries, public and private"],["AI BOM","assets, MCP servers, dependencies"]],
+  verify:"You can answer what MCP infrastructure exists and where it came from.",
+  gates:"Meaningful tool-level policy. You cannot allowlist tools you have not inventoried."}
+]},
+{p:"Phase 2",t:"Scan before you trust",hue:"var(--l-policy)",steps:[
+ {t:"Scan MCP servers and tools",meta:"Supply Chain Security → MCP Scanning · days",
+  where:"Pre-deployment, before anything enters development or production.",
+  needs:["Advantage tier","The MCP inventory from step 4"],
+  actions:["Analyse MCP servers and tools for latent vulnerabilities and assess severity.","Identify compromised or malicious assets, unsafe tools and high-risk MCP components.","Review the per-asset risk scores generated by the scan."],
+  kv:[["Detects","malicious code · poisoned data · unsafe tools"],["Output","per-asset risk scores"],["Intelligence","Cisco threat intel and proprietary scanning"]],
+  verify:"Every in-scope MCP server carries a risk score.",
+  gates:"Risk-profile-based policy — the scores are the policy input."},
+ {t:"Assign risk profiles",meta:"Policy design · half a day",
+  where:"The join between scanning and runtime. This is the design decision in this workflow.",
+  needs:["Risk scores from scanning","Agreement on tolerance"],
+  actions:["Define what score constitutes acceptable, restricted and blocked.","Map those bands to allowlist and blocklist behaviour at runtime.","Agree the exception path now. There will be a high-scoring MCP server somebody needs, and deciding under pressure goes badly."],
+  kv:[["Drives","runtime allowlists and blocklists"],["Basis","severity scoring from MCP validation"]],
+  verify:"A written policy stating what score blocks what.",
+  gates:"Runtime enforcement.",
+  warn:"Scanning without a risk-profile policy produces a list nobody acts on. The scoring is only useful once it is bound to an automatic consequence."}
+]},
+{p:"Phase 3",t:"Enforce at runtime",hue:"var(--l-deploy)",steps:[
+ {t:"Enable MCP runtime guardrails",meta:"Supply Chain Security → MCP Runtime Guardrails · days",
+  where:"In the traffic path between LLMs, agents and tools.",
+  needs:["Runtime capability","Risk profiles assigned"],
+  actions:["Enable monitoring and enforcement across MCP requests and responses.","Apply tool allowlists and blocklists derived from the assigned risk profiles.","Confirm that restriction happens automatically from scoring rather than requiring a manual list."],
+  kv:[["Covers","MCP requests and responses"],["Enforces","tool allowlists and blocklists"],["Derived from","risk profiles and severity scoring"]],
+  verify:"A blocklisted tool call is refused and logged.",
+  gates:"Agent behaviour protection."},
+ {t:"Turn on agent behaviour protection",meta:"Runtime policy · days",
+  where:"The behavioural layer, above tool-level authorization.",
+  needs:["MCP runtime guardrails in place"],
+  actions:["Enable detection and blocking of unauthorized tool usage, privilege escalation and deceptive or misaligned behaviour.","Enable harmful action chain detection — individually permissible calls that compose into something damaging.","Enable memory poisoning and intent hijacking detection.","Start in monitor mode as with any runtime policy."],
+  kv:[["Detects","memory poisoning · tool misuse · privilege escalation"],["Also","intent hijacking · deceptive behaviour · harmful chains"]],
+  verify:"A deliberately manipulated agent interaction is detected.",
+  gates:"Nothing further in enforcement.",
+  warn:"This catches behaviour, not access. An authorized tool call can still be manipulated, and a blocked call was never a behaviour question. Pair this with identity-side authorization for the other half."},
+ {t:"Add NeMo Guardrails where you already run it",meta:"Integration · optional",
+  where:"The application side, for teams already invested in that framework.",
+  needs:["NVIDIA NeMo Guardrails in use"],
+  actions:["Use the developer-ready integration with the NeMo Guardrails open-source framework.","Treat it as a modular interoperability path rather than a replacement for AI Defense runtime.","Note this forms part of the Cisco Secure AI Factory with NVIDIA reference architecture if that is your infrastructure direction."],
+  kv:[["Framework","NVIDIA NeMo Guardrails"],["Part of","Cisco Secure AI Factory with NVIDIA"]],
+  verify:"Guardrail decisions apply consistently through both paths.",
+  gates:"Nothing — this is an interoperability option."}
+]},
+{p:"Phase 4",t:"Operate",hue:"var(--l-ops)",steps:[
+ {t:"Correlate with identity and land it in Splunk",meta:"Telemetry · half a day",
+  where:"The SOC. Agent behaviour without identity context is hard to investigate.",
+  needs:["Splunk or another SIEM","Ideally identity-side agent registration"],
+  actions:["Forward agentic events and MCP violations to the SIEM.","Where you also run identity-side agent controls, correlate a behavioural detection with the agent identity and its accountable human owner.","Confirm an analyst can trace an unsafe action to an agent to an owner in one place."],
+  kv:[["Behavioural half","AI Defense"],["Identity half","Duo and Identity Intelligence"],["Shared plane","Splunk"]],
+  verify:"One investigation surface covering both halves.",
+  gates:"Credible agentic incident response."},
+ {t:"Set the re-scan cadence",meta:"Ongoing · continuous",
+  where:"Process. Agent estates change faster than anything else here.",
+  needs:["A named owner"],
+  actions:["Re-scan MCP servers on version change and on a fixed cadence regardless.","Re-run discovery continuously — shadow agents appear between reviews.","Re-verify capability availability each quarter, since this part of the product is still expanding."],
+  kv:[["Re-scan","on version change plus fixed cadence"],["Discovery","continuous"]],
+  verify:"New agentic assets surface within days.",
+  gates:"Nothing — end state."}
+]}],
+
+supply:[
+{p:"Phase 0",t:"Prerequisites",hue:"var(--l-plat)",steps:[
+ {t:"Confirm Advantage entitlement",meta:"Licensing · hours",
+  where:"Entitlement, and the single most common scoping surprise on this product.",
+  needs:["Advantage tier"],
+  actions:["Confirm Advantage. Supply Chain Risk Management is not in Validation Essentials or Runtime Essentials — it is Advantage only.","Surface this at scoping rather than at deployment. It is a tier change, not a feature toggle."],
+  kv:[["Tier required","Advantage only"],["Covers","model files · repositories · MCP servers"]],
+  verify:"Advantage confirmed in writing.",
+  gates:"This entire workflow.",
+  warn:"Customers routinely assume model scanning is included because it appears prominently in the data sheet. It is the only one of the four components gated to a single tier."},
+ {t:"Map where models enter your pipeline",meta:"Discovery workshop · half a day",
+  where:"With the MLOps team. You are looking for every door a model can come through.",
+  needs:["Knowledge of your model sourcing"],
+  actions:["List the sources — public hubs, internal repositories, vendor-supplied models, fine-tuned derivatives.","Identify which are already covered by Cisco's HuggingFace partnership, where public model files are scanned using Talos threat intelligence and ClamAV.","Identify the private repositories that need AI Defense scanning because nothing covers them today."],
+  kv:[["Public hub coverage","HuggingFace partnership, Talos + ClamAV"],["Private repos","AI Defense scanning"],["Also in scope","datasets and MCP assets"]],
+  verify:"Every entry point named with an owner.",
+  gates:"Connector configuration."}
+]},
+{p:"Phase 1",t:"Connect the sources",hue:"var(--l-connect)",steps:[
+ {t:"Connect GitHub",meta:"Integrations → GitHub · 1–2 hours",
+  where:"Where model files and AI assets actually live.",
+  needs:["GitHub admin able to authorise the integration"],
+  actions:["Enable the GitHub integration.","Scope it to the repositories holding model files, datasets and AI assets.","Confirm coverage of the repositories identified in step 2 rather than defaulting to the whole org."],
+  kv:[["Scans","model files and complete repositories"],["Looks for","malicious code · backdoors · unsafe components"]],
+  verify:"Repositories appear as scannable assets.",
+  gates:"Scanning."},
+ {t:"Point scanning at model artefacts",meta:"Supply Chain Security → Model Scanning · hours",
+  where:"The scanning configuration.",
+  needs:["Sources connected"],
+  actions:["Configure scanning of AI model files and complete repositories.","Include datasets where they are part of the risk — poisoned training data is in scope, not just malicious code.","Add MCP servers to the same scanning scope if agents are in play."],
+  kv:[["Model files","malicious code, backdoors"],["Datasets","poisoned data"],["MCP","servers and tools"]],
+  verify:"A first scan completes and returns findings.",
+  gates:"Risk scoring."}
+]},
+{p:"Phase 2",t:"Score and decide",hue:"var(--l-policy)",steps:[
+ {t:"Review per-asset risk scores",meta:"Supply chain findings · 2–4 hours",
+  where:"The findings view. Scores are the currency of everything downstream.",
+  needs:["A completed scan"],
+  actions:["Work through the per-asset risk scores generated during evaluation.","Separate genuinely malicious findings from unsafe-but-intentional ones — a model with broad file access may be doing its job.","Identify anything already in production that would fail the gate you are about to build."],
+  kv:[["Output","per-asset risk score"],["Purpose","quantify exposure for policy decisions"]],
+  verify:"A scored inventory with the production exceptions identified.",
+  gates:"Policy design.",
+  warn:"Find the production violations before you turn on gating. Discovering that a live model fails your new policy after enforcement is enabled is a bad afternoon."},
+ {t:"Define risk-profile-based policy",meta:"Policy design · half a day",
+  where:"A governance decision, not a product setting.",
+  needs:["Scores","Agreement between security and MLOps on tolerance"],
+  actions:["Define score bands and what each one means — pass, warn, block.","Agree the exception process and who signs it before you need it.","Decide whether gating applies to new assets only, or retroactively to what is already deployed."],
+  kv:[["Bands","pass · warn · block"],["Decision","new assets only, or retroactive"]],
+  verify:"A written policy both teams have agreed to.",
+  gates:"Enforcement."}
+]},
+{p:"Phase 3",t:"Gate and operate",hue:"var(--l-deploy)",steps:[
+ {t:"Enforce preemptive blocking",meta:"Policy enforcement · days",
+  where:"Ahead of development and production, which is the point of this component.",
+  needs:["Policy agreed"],
+  actions:["Enable policy-driven gating so high-risk components are blocked before use.","Enforce allowlists and blocklists derived from the scanning insights.","Confirm that unsafe models and tools are prevented from entering pipelines, not merely flagged after arrival."],
+  kv:[["Enforcement","preemptive, before development or production"],["Mechanism","allowlists and blocklists from scan insight"]],
+  verify:"A deliberately high-risk artefact is blocked from entering the pipeline.",
+  gates:"The CI/CD integration."},
+ {t:"Wire the gate into CI/CD",meta:"Pipeline · days",
+  where:"Your build pipeline, so this happens without anyone remembering to run it.",
+  needs:["An API key","Pipeline access"],
+  actions:["Add scanning as a pipeline stage on model artefact changes.","Decide what fails a build versus what warns.","Give developers a fast path to see why something failed — an opaque gate gets routed around."],
+  kv:[["Trigger","model artefact change"],["Needs","clear developer feedback"]],
+  verify:"A pipeline run blocks on a high-risk artefact and explains why.",
+  gates:"Sustained coverage."},
+ {t:"Re-scan on change",meta:"Ongoing · continuous",
+  where:"Process.",
+  needs:["A named owner"],
+  actions:["Re-scan on every new model version rather than at fixed intervals only.","Re-scan MCP servers when their tools change, not just when the server does.","Review the score bands periodically — tolerance that made sense at pilot rarely fits production."],
+  kv:[["Trigger","new versions and tool changes"],["Review","score bands periodically"]],
+  verify:"A new model version cannot reach production unscanned.",
+  gates:"Nothing — end state."}
+]}],
+
+prem:[
+{p:"Phase 0",t:"Design",hue:"var(--l-plat)",steps:[
+ {t:"Choose where the data plane lives",meta:"Design decision · days",
+  where:"The decision that defines this whole workflow. The control plane is always Cisco-hosted; only the data plane moves.",
+  needs:["Clarity on what constraint is driving this — residency, exposure, or both"],
+  actions:["<b>Customer VPC:</b> data plane in your AWS, Azure or GCP. Inference stays in your cloud.","<b>AI POD:</b> data plane on-prem on OpenShift. Models never need internet exposure at all.","In both, only management-plane metadata reaches Cisco — inference traffic, MCP interactions, agent workflows and policy enforcement stay in your environment.","Be clear that the control plane remains Cisco-hosted regardless. If that alone is unacceptable, this product does not meet the requirement."],
+  kv:[["Control plane","always Cisco-hosted via SCC"],["Data plane","SaaS · your VPC · AI POD"],["To Cisco","management metadata only"]],
+  verify:"A decision recorded against the specific constraint driving it.",
+  gates:"Sizing and everything after.",
+  warn:"Confirm early whether the requirement is data residency or full air-gap. AI Defense satisfies the first. It does not offer a fully disconnected control plane."},
+ {t:"Size the deployment",meta:"Capacity planning · half a day",
+  where:"Your capacity plan. Sizing is per request rate, not per user.",
+  needs:["Expected request rate and token sizes","Number of applications to protect"],
+  actions:["Small: 2× UCS C845A, 4× L40S each, 100 req/s and 20 apps.","Medium: 2× UCS C845A, 8× L40S each, 200 req/s and 40 apps.","Large: 3× UCS C845A, 8× L40S each, 300 req/s and 60 apps.","Check the basis — one application at 5 req/s with a 2.5k token request. Model your own token sizes rather than accepting the app count at face value."],
+  kv:[["Small","100 req/s · 20 apps"],["Medium","200 req/s · 40 apps"],["Large","300 req/s · 60 apps"],["Basis","5 req/s at 2.5k tokens per app"]],
+  verify:"A size chosen against your own measured token profile.",
+  gates:"Hardware procurement.",
+  warn:"The app counts assume a specific request profile. An application with much larger prompts consumes far more of the envelope than the headline number suggests."},
+ {t:"Choose the control plane model",meta:"Infrastructure decision · hours",
+  where:"The OpenShift control plane, where there is a real choice worth making.",
+  needs:["Knowledge of whether you have spare vSphere capacity"],
+  actions:["<b>Option A, dedicated physical:</b> 3× UCS C220 M7, managed as part of the AI POD. The default, and right for a fully contained on-prem deployment.","<b>Option B, VMware UPI:</b> 3 control plane VMs on your existing vSphere. No physical C220s needed.","Option B eliminates dedicated management nodes, reuses existing infrastructure, and gets a proof of value running faster.","If choosing B, make sure OpenShift subscription counts reflect three master VMs plus the worker nodes."],
+  kv:[["Option A","3× UCS C220 M7"],["Option B","3 VMs, 8 vCPU · 32 GB · 120 GB each"],["Option B needs","BIOS firmware, VMXNET3, RHCOS ISO boot"]],
+  verify:"A control plane decision with capacity reserved.",
+  gates:"Cluster build."}
+]},
+{p:"Phase 1",t:"Build the cluster",hue:"var(--l-deploy)",steps:[
+ {t:"Prepare the network",meta:"Network change · days",
+  where:"Your network team. Modest requirements, but they need raising early.",
+  needs:["Local DNS reachable from the cluster","Outbound internet path"],
+  actions:["Ensure local DNS resolves both internet and internal addresses, and is reachable from the OpenShift cluster.","Open outbound TCP 443. That is the only outbound firewall rule required.","Confirm the cluster can reach the AI model endpoints it will be protecting."],
+  kv:[["Outbound","TCP 443 only"],["Needs","DNS · AI model endpoint access · internal DNS"]],
+  verify:"Cluster nodes resolve DNS and reach the internet on 443.",
+  gates:"Connector deployment.",
+  warn:"The single outbound rule is a genuine advantage in a security review. Lead with it — the connector never accepts inbound connections from Cisco."},
+ {t:"Stand up OpenShift",meta:"OpenShift build · days",
+  where:"The cluster itself. This is standard OpenShift work, not AI Defense work.",
+  needs:["OpenShift 4.18 or higher","Hardware or vSphere capacity from phase 0"],
+  actions:["Build the cluster with a minimum of three control plane nodes and two worker nodes.","For the UPI model, upload the RHCOS ISO to the datastore, prepare DNS and static IP assignments, and generate ignition configurations.","Stand up a jump server for cluster management — the AI Defense install runs from it."],
+  kv:[["OCP version","4.18 or higher"],["Minimum nodes","3 control plane, 2 worker"],["Needs","jump server"]],
+  verify:"A healthy cluster reachable from the jump server.",
+  gates:"Operator installation."},
+ {t:"Install the required operators",meta:"OpenShift operators · hours",
+  where:"On the cluster, before AI Defense goes anywhere near it.",
+  needs:["A working cluster"],
+  actions:["Install the NVIDIA GPU operator.","Install an Ingress operator — the reference design uses Ingress NGINX as its example.","The Ingress operator is a hard requirement for runtime: without it the AI Defense proxy gateway and API endpoint have no inbound path."],
+  kv:[["Required","NVIDIA GPU operator"],["Required for runtime","Ingress operator"]],
+  verify:"Both operators report healthy.",
+  gates:"Runtime capability specifically.",
+  warn:"Skipping the Ingress operator produces a deployment that installs cleanly and then silently cannot serve runtime traffic. Install it before, not after."}
+]},
+{p:"Phase 2",t:"Connect to Cisco",hue:"var(--l-connect)",steps:[
+ {t:"Apply security context constraints",meta:"Jump server · 30 min",
+  where:"The OCP cluster, before the Helm charts.",
+  needs:["Cluster admin from the jump server"],
+  actions:["Connect to the cluster from the jump server used to manage it.","Apply the required OCP Security Context Constraints before installing any Helm charts.","Have your platform team review these — SCC changes usually need their own approval."],
+  kv:[["Run from","OCP jump server"],["Before","Helm chart installation"]],
+  verify:"Constraints applied without error.",
+  gates:"Helm installation."},
+ {t:"Create the hybrid connector",meta:"AI Defense → Administration → Hybrid Deployment · 1 hour",
+  where:"The AI Defense UI in SCC, which generates the install command.",
+  needs:["SCC access","Cluster ready"],
+  actions:["In AI Defense, go to <b>Administration → Hybrid Deployment</b> and select <b>Deploy a Connector</b>.","Follow the interface to select your configuration preference.","Generate the API key and insert it into the provided command.","Run the Helm installation from the OpenShift jump server."],
+  kv:[["Path","Administration → Hybrid Deployment"],["Delivery","Cisco-provided Helm charts"],["Transport","bidirectional gRPC over TLS"]],
+  verify:"Refresh the AI Defense interface — the connector status should read <b>Active</b>.",
+  gates:"Everything on-prem.",
+  warn:"The connection is initiated only from the data plane. There are no outbound connection requests from Cisco's control plane, which is usually the answer to the first question a security architect asks."},
+ {t:"Validate the deployment",meta:"Jump server · 30 min",
+  where:"The cluster, confirming what actually landed.",
+  needs:["Connector Active"],
+  actions:["List all AI Defense pods in the namespace and confirm they are running.","List the AI Defense services.","List the routes.","Check namespace events for anything failing quietly."],
+  kv:[["Check","pods · services · routes · namespace events"]],
+  verify:"All pods running, services and routes present, no error events.",
+  gates:"Ingress configuration."}
+]},
+{p:"Phase 3",t:"Expose the services",hue:"var(--l-deploy)",steps:[
+ {t:"Configure ingress",meta:"OpenShift · 1–2 hours",
+  where:"Two services need exposing, and they do different jobs.",
+  needs:["Ingress operator installed","Certificates"],
+  actions:["Deploy the ingress configuration to redirect to both AI Defense services.","<code>ai-defense-apigateway</code> on path <code>/api/v1/inspect</code> serves the API disposition use case.","<code>ai-defense-proxy-service</code> on path <code>/</code> serves the gateway use case.","Handle certificates per your environment — the reference design inserts them into the routes, but a domain-wide certificate configured differently is equally valid."],
+  kv:[["API endpoint","/api/v1/inspect"],["Proxy endpoint","/"],["Certificates","per route, or domain-wide"]],
+  verify:"Both endpoints respond over HTTPS.",
+  gates:"Any runtime use."},
+ {t:"Configure DNS",meta:"Internal DNS · hours",
+  where:"Your internal DNS, pointing at the cluster ingress controller.",
+  needs:["The ingress controller IP"],
+  actions:["Add the DNS entry mapping your chosen subdomain to the IP of the OpenShift cluster ingress controller.","Use the same DNS name you configured in the ingress services.","Confirm resolution from the networks where AI applications actually run."],
+  kv:[["Record","subdomain → ingress controller IP"],["Must match","the ingress service configuration"]],
+  verify:"Applications resolve and reach the endpoints.",
+  gates:"Application cutover."}
+]},
+{p:"Phase 4",t:"Use it and operate it",hue:"var(--l-ops)",steps:[
+ {t:"Run validation against an on-prem model",meta:"Validation · hours",
+  where:"Proving the reason you built this — testing a model that is not internet-exposed.",
+  needs:["An on-prem model at an HTTPS endpoint","Its header and payload structure"],
+  actions:["Create a validation run with asset type External.","Enter the on-prem model URL with its extension, the request body template, and the path to the model response.","Once the hybrid connector is deployed, validation runs work exactly as they do in SaaS."],
+  kv:[["Asset type","External"],["Endpoint","https:// preferred"],["Default response path","choices.0.message.contents"]],
+  verify:"A validation run completes against a model that was never exposed externally.",
+  gates:"Nothing — this is the payoff."},
+ {t:"Configure the runtime gateway",meta:"Applications and Policies · half a day",
+  where:"Same flow as SaaS, with one substitution.",
+  needs:["Ingress and DNS working"],
+  actions:["Create the application and connection as in the standard runtime workflow.","Open the Connection Guide and copy the gateway URL.","<b>Replace the host in that URL with your <code>ai-defense-proxy-service</code> URL.</b> This is the on-prem-specific step.","Create and bind the policy, then repoint the application at the gateway URL."],
+  kv:[["Substitution","host → your proxy service URL"],["Otherwise","identical to SaaS"]],
+  verify:"Traffic proxies through the on-prem gateway and policy triggers.",
+  gates:"Live on-prem protection.",
+  warn:"Using the SaaS gateway URL unchanged is the most common on-prem mistake. The path is right; the host must be yours."},
+ {t:"Set up monitoring and log export",meta:"Observability · half a day",
+  where:"Your own observability stack. The SaaS integrations do not all apply here.",
+  needs:["An OpenTelemetry collector or OCP logging"],
+  actions:["Configure OpenTelemetry to send telemetry from the AI Defense on-prem deployment.","Alternatively use standard OCP logging, or forward to an external log collector.","Use the log export to SIEM path via OpenTelemetry so on-prem events reach the same place as everything else."],
+  kv:[["Options","OpenTelemetry · OCP logging · external collector"],["Goal","on-prem events in the same SIEM"]],
+  verify:"AI Defense events appear in your SIEM from the on-prem deployment.",
+  gates:"Nothing — end state.",
+  warn:"An on-prem deployment whose events never leave the cluster recreates the silo you built this to avoid. Wire the export in the same project, not a later one."}
+]}]
+};
+
+var COMPONENTS=[
+{n:"AI Cloud Visibility",cat:"Discovery",hue:"var(--l-connect)",tag:"disc",m:["disc","agent","supply"],
+ plain:"Finds AI assets across your cloud environments — including the ones nobody registered.",
+ how:["Continuous visibility into AI-related cloud traffic across ingress, egress and east-west.","Automatically discovers models and agents spanning Amazon Bedrock, Google Vertex and Azure AI Foundry.","AI traffic flow mapping gives a view of the enterprise AI attack surface rather than just an asset list.","Automatically identifies MCP servers, agent processes and tool integrations to highlight hidden agentic workflows.","The AI asset policy check tracks and prioritises assessed assets, and initiates scans or guardrails for unprotected ones."],
+ needs:["Cloud integrations — CloudTrail for AWS, plus provider connections.","Multicloud Defense for traffic-level visibility."],
+ dep:"The starting point for discovery, and a prerequisite for meaningful agent and supply chain work — you cannot govern assets you have not found.",
+ watch:"Coverage depends on what your cloud logging already records. An empty discovery result can mean no AI assets, or CloudTrail not enabled in that region. Check the second before believing the first."},
+{n:"AI Inventory",cat:"Discovery",hue:"var(--l-connect)",tag:"disc",m:["disc","agent","supply"],
+ plain:"The consolidated single-pane view of every discovered AI asset.",
+ how:["Inventories models, agents, applications and connected data sources.","Maps connections across data, models and agents so policy decisions are informed by relationships, not just counts.","Surfaces new or unsanctioned assets so they can be brought into compliance."],
+ needs:["At least one integration returning data."],
+ dep:"Used wherever discovery matters. It is also where the validation and runtime workflows get their target lists.",
+ watch:"If the inventory matches what your teams expected, coverage is probably incomplete. The value of this component is in what surprises you."},
+{n:"Application Discovery",cat:"Discovery",hue:"var(--l-connect)",tag:"disc",m:["disc"],
+ plain:"Which third-party AI applications your employees are actually using.",
+ how:["Tracks AI application use across the workforce.","Distinguishes sanctioned from unsanctioned tools.","The work is done by Cisco Secure Access; AI Defense is where it surfaces."],
+ needs:["Cisco Secure Access deployed and in the employee traffic path."],
+ dep:"Only the discovery workflow. This is employee behaviour, not cloud infrastructure — a different problem from the rest of the product.",
+ watch:"This gets conflated with rogue AI assets in your own cloud constantly. They are different findings, different owners, and this one depends on a separate product being deployed."},
+{n:"Multicloud Defense integration",cat:"Discovery",hue:"var(--l-connect)",tag:"disc",m:["disc","run"],
+ plain:"Network-layer AI traffic visibility, and a runtime enforcement path that needs no application change.",
+ how:["Connect an MCD tenant to AI Defense with an API key generated from the MCD dashboard.","Onboard AWS or Azure to MCD with appropriate account permissions, then enable Traffic Visibility.","AI discovery of assets covers AWS and Azure through this path.","Also serves as one of the three runtime protection deployment modes."],
+ needs:["An AI Defense licence.","An MCD tenant with cloud accounts onboarded."],
+ dep:"Discovery and runtime. Not relevant to validation or supply chain scanning.",
+ watch:"This is the runtime option when you genuinely cannot modify the application. Worth knowing about before you conclude the gateway is the only path."},
+{n:"AI Model and Application Validation",cat:"Validation",hue:"var(--l-policy)",tag:"val",m:["val","agent"],
+ plain:"Algorithmic red teaming that does in minutes what manual red teaming takes weeks to do.",
+ how:["Runs 200+ attack techniques and threat subcategories using Cisco's proprietary AI.","Breaks down as 45+ prompt injection techniques, 30+ data privacy categories, 20+ security targets and 50+ safety categories.","Tests models, applications and agents.","Generates guardrails tailored to the specific vulnerabilities found in each model.","Reports map to OWASP Top 10 for LLM Applications, MITRE ATLAS and NIST AI-RMF."],
+ needs:["Validation Essentials or Advantage tier.","The endpoint contract — URL, headers, body template and response path."],
+ dep:"Core to the validation workflow, and used against agents too. Not part of discovery, runtime or supply chain.",
+ watch:"The default response path is <code>choices.0.message.contents</code>. A wrong path produces a run that looks successful and returns meaningless results — test the endpoint by hand first."},
+{n:"Adaptive red teaming",cat:"Validation",hue:"var(--l-policy)",tag:"val",m:["val","agent"],
+ plain:"Multi-turn testing that adjusts its approach based on how the model responds.",
+ how:["Contrasts with standard single-pass testing across the technique library.","Adaptive single-turn and multi-turn testing across multiple languages was the headline validation addition in February 2026.","Results show the conversation path, not just the outcome."],
+ needs:["Validation entitlement.","More run time than standard testing."],
+ dep:"Validation, and agent testing specifically — multi-turn manipulation is how agents actually get compromised.",
+ watch:"Read the path, not the verdict. How the model was walked into failing is the part that tells you what to fix."},
+{n:"Validation targets, profiles and custom goals",cat:"Validation",hue:"var(--l-policy)",tag:"val",m:["val"],
+ plain:"The configuration objects that make a validation run relevant to your domain rather than generic.",
+ how:["Targets define what is being tested — a model, application or agent.","Profiles determine the testing approach.","Custom goals add domain-specific objectives beyond the built-in categories."],
+ needs:["Subject-matter knowledge of what a bad outcome looks like for this application."],
+ dep:"Validation only.",
+ watch:"Custom goals are where the real value is and where subject-matter time gets consumed. Start with two or three, not twenty, or the run never gets configured."},
+{n:"AI Runtime Protection",cat:"Runtime",hue:"var(--l-deploy)",tag:"run",m:["run","agent","prem"],
+ plain:"Inspects prompts and responses in real time and blocks what violates policy.",
+ how:["Security guardrails cover prompt injection, denial of service, malicious URLs and related attacks.","Privacy guardrails prevent leakage of PII, PCI, PHI, source code and model information.","Safety guardrails block toxic or harmful content across financial, societal, reputational and user categories.","Covers multiple traffic types — API calls, outbound traffic and internal service-to-service communication.","A violations dashboard shows violation types with the prompts and responses involved."],
+ needs:["Runtime Essentials or Advantage.","An enforcement path — gateway, API or Multicloud Defense."],
+ dep:"The runtime workflow, extended to agents, and the main reason to build an on-prem data plane.",
+ watch:"Run in monitor mode for a fortnight before enabling block. Skipping that is how a control gets permanently disabled after one bad week."},
+{n:"Runtime gateway",cat:"Runtime",hue:"var(--l-deploy)",tag:"run",m:["run","agent","prem"],
+ plain:"A proxy between your application and its model. The only mode that blocks inline by default.",
+ how:["Acts as a proxy so AI Defense monitors traffic to and from the model or application.","Logs an event each time policy triggers and blocks prompts or responses that violate it.","Deployment is a configuration change: copy the gateway URL from the Connection Guide and replace the application's model URL with it.","On-prem, the host in that URL is replaced with your own proxy service URL."],
+ needs:["Ability to change the application's model endpoint configuration.","On-prem: an Ingress operator and DNS."],
+ dep:"Runtime and agents, and the standard choice in on-prem deployments.",
+ watch:"All AI requests now route through AI Defense, which puts it in your application's critical path. Confirm the availability characteristics before production cutover."},
+{n:"Inspection API",cat:"Runtime",hue:"var(--l-deploy)",tag:"run",m:["run","prem"],
+ plain:"On-demand evaluation. Returns a verdict; your application decides what to do with it.",
+ how:["Evaluates prompts and responses only when explicitly sent to the runtime API endpoint.","Does not actively monitor in real time.","Policy rules do not block — AI Defense returns a response and your application reacts.","Violations are still logged to the event log.","Authenticated with an API key; the on-prem path is <code>/api/v1/inspect</code>."],
+ needs:["Application code changes to call the API and act on the verdict.","An API key."],
+ dep:"An alternative runtime mode. Not applicable to discovery, validation or supply chain.",
+ watch:"Chosen because it feels less invasive, then treated as enforcement. It gives you a verdict. The enforcement is code your team still has to write and maintain."},
+{n:"Policy Studio",cat:"Policy",hue:"var(--l-policy)",tag:"policy",m:["run","agent","prem"],
+ plain:"Where runtime policies are authored, above the individual guardrails and rules.",
+ how:["Policy creation runs as a wizard: name, description and language, then enforcement type and connection selection, then the guardrail sections, then a summary.","Policies bind to specific connections rather than to applications.","Guardrails can be set independently for prompt and response, and independently to monitor or block."],
+ needs:["An application and connection already created."],
+ dep:"Every workflow that enforces anything at runtime.",
+ watch:"A policy with no connection selected saves without complaint and protects nothing. Verify the binding, not just that the policy exists."},
+{n:"DLP profiles",cat:"Policy",hue:"var(--l-policy)",tag:"policy",m:["run","agent","prem"],
+ plain:"The data classes a privacy guardrail enforces against.",
+ how:["Covers PII, PCI, PHI, source code and model information.","Applied through privacy guardrails within a runtime policy.","Configurable independently for prompts and for responses."],
+ needs:["Knowledge of the regulatory regime you are actually audited against."],
+ dep:"Runtime enforcement in every deployment shape.",
+ watch:"Data going into a model and data coming out are different exposures with different owners. Configure both directions deliberately rather than mirroring one onto the other."},
+{n:"Model-specific guardrails",cat:"Policy",hue:"var(--l-policy)",tag:"policy",m:["val","run","prem"],
+ plain:"Guardrails generated from what validation actually found in your model.",
+ how:["Validation produces guardrails tailored to the specific vulnerabilities each model exhibited.","Those guardrails then feed runtime enforcement."],
+ needs:["A completed validation run.","Runtime entitlement to enforce what validation generated."],
+ dep:"The bridge between the validation and runtime workflows. This loop is the core argument for buying both.",
+ watch:"With Validation Essentials alone you can generate these but not enforce them. Surface that gap at scoping rather than at handover."},
+{n:"AI Supply Chain Risk Management",cat:"Supply chain",hue:"var(--l-plat)",tag:"supply",m:["supply","agent"],
+ plain:"Scans model files, repositories and MCP servers before they enter development or production.",
+ how:["Identifies malicious code, poisoned data, unsafe tools, compromised components and high-risk MCP assets.","Uses Cisco threat intelligence and proprietary scanning techniques.","Generates per-asset risk scores that support risk-profile-based policies.","Preemptively blocks unsafe models or tools rather than flagging them after arrival.","Cisco separately scans public model files through a HuggingFace partnership using Talos threat intelligence and ClamAV."],
+ needs:["<b>Advantage tier — this component is not in either Essentials tier.</b>","Connected repositories, typically via GitHub."],
+ dep:"The supply chain workflow, and the scanning half of agent governance.",
+ watch:"The most common scoping surprise on this product. Customers assume model scanning is included because it features prominently in the data sheet. It is Advantage only."},
+{n:"MCP scanning",cat:"Supply chain",hue:"var(--l-plat)",tag:"supply",m:["agent","supply"],
+ plain:"Checks MCP servers and tools for vulnerabilities before agents can use them.",
+ how:["Analyses MCP servers and tools during supply chain scanning to identify latent vulnerabilities and assess severity.","Prevents unsafe or compromised components entering development or production.","Produces the severity scoring that MCP runtime guardrails then enforce against."],
+ needs:["Advantage tier.","An MCP inventory from discovery or the MCP Catalog."],
+ dep:"Agent governance and supply chain. The two workflows converge here.",
+ watch:"Scanning without a risk-profile policy produces a list nobody acts on. The scores are only useful once bound to an automatic consequence."},
+{n:"MCP runtime guardrails",cat:"Runtime",hue:"var(--l-deploy)",tag:"run",m:["agent","run"],
+ plain:"Enforcement across MCP requests and responses, with tool allowlists and blocklists.",
+ how:["Monitors and enforces safe behaviour across MCP traffic connecting LLMs, agents and tools.","Runtime policies enforce tool allowlists and blocklists.","Restriction happens automatically based on assigned risk profiles and severity scoring from MCP validation workflows."],
+ needs:["MCP scanning to have produced risk profiles.","Runtime capability."],
+ dep:"Agent governance primarily, and part of the broader runtime picture.",
+ watch:"Scanning and runtime are designed to feed each other. Deploying one without the other loses most of the value — the allowlists derive from the scan scores."},
+{n:"Agent behaviour protection",cat:"Runtime",hue:"var(--l-deploy)",tag:"run",m:["agent"],
+ plain:"Detects and blocks unsafe agent actions that authorization alone cannot catch.",
+ how:["Detects unauthorized tool usage, privilege escalation, and deceptive or misaligned behaviours.","Covers memory poisoning, intent hijacking and harmful action chains.","Enforces policies on tool invocation, privilege levels and action chains."],
+ needs:["Runtime capability.","Agent traffic passing through an enforcement point."],
+ dep:"Agent governance only.",
+ watch:"This is behavioural, not access control. An authorized tool call can still be manipulated. Pair it with identity-side agent authorization or you have covered one half of the problem."},
+{n:"AI Bill of Materials",cat:"Supply chain",hue:"var(--l-plat)",tag:"supply",m:["disc","agent","supply"],
+ plain:"Centralised visibility and governance for AI software assets and where they came from.",
+ how:["Covers AI software assets including MCP servers and third-party dependencies.","Announced February 2026 as part of the largest AI Defense expansion since launch.","Has a dedicated CLI for pipeline use as well as a console view.","Pairs with the MCP Catalog, which discovers and inventories MCP servers and registries across public and private platforms."],
+ needs:["Assets discovered."],
+ dep:"Discovery, agent governance and supply chain — it answers provenance rather than existence.",
+ watch:"What exists and where it came from are different questions. You need both answered before tool-scoped authorization policy means anything."},
+{n:"Hybrid connector",cat:"Deployment",hue:"var(--l-deploy)",tag:"deploy",m:["prem"],
+ plain:"Links a data plane running on your infrastructure to Cisco's hosted control plane.",
+ how:["Deployed through Cisco-provided Helm charts on your cluster.","Communication runs over a bidirectional gRPC stream encrypted with TLS.","The connection is initiated only from the data plane — no outbound connection requests come from the control plane.","Created from Administration then Hybrid Deployment in the AI Defense UI, which generates the install command.","Supports AWS EKS, Azure AKS, GCP, and AI PODs on OpenShift."],
+ needs:["A prepared Kubernetes cluster.","OCP Security Context Constraints applied before Helm installation.","Outbound TCP 443."],
+ dep:"On-prem and VPC deployments only. SaaS needs none of this.",
+ watch:"The single outbound rule and data-plane-initiated connection are the strongest points in a security review. Lead with them."},
+{n:"AI PODs data plane",cat:"Deployment",hue:"var(--l-deploy)",tag:"deploy",m:["prem"],
+ plain:"Validation and runtime processing inside your own data centre, on Cisco UCS.",
+ how:["Three validated sizes on UCS C845A workers with L40S GPUs, supporting 100, 200 or 300 requests per second.","Control plane is either 3× UCS C220 M7 or three VMs on your vSphere using the OpenShift UPI model.","Requires OpenShift 4.18 or higher with NVIDIA GPU and Ingress operators.","Models and applications being validated or protected never need exposing to the public internet."],
+ needs:["Hardware or vSphere capacity.","An OpenShift build and a jump server.","DNS and certificates."],
+ dep:"The sovereign workflow only.",
+ watch:"Sizing is based on one application at 5 req/s with 2.5k token requests. An application with much larger prompts eats far more of the envelope than the headline app count implies."},
+{n:"Splunk integration",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["disc","run","agent","supply","prem"],
+ plain:"Puts AI findings and violations where analysts already work.",
+ how:["Integrates AI security operations with broader SecOps through security console integration.","Carries events, violations and findings across the workflows."],
+ needs:["Splunk, or another SIEM."],
+ dep:"Relevant to every workflow that produces findings — which is all of them except pure validation.",
+ watch:"AI events in an isolated console get ignored within a quarter. This integration is the difference between a control and a dashboard."},
+{n:"OpenTelemetry log export",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["prem"],
+ plain:"How on-prem deployments get their events out to a SIEM.",
+ how:["OpenTelemetry can be configured to send telemetry from an AI Defense on AI PODs deployment.","Standard OCP logging, or forwarding to an external log collector, works as an alternative.","The user guide documents log export to SIEM via OpenTelemetry as its own topic."],
+ needs:["An OpenTelemetry collector, or OCP logging configured."],
+ dep:"On-prem deployments, where the SaaS integrations do not all apply.",
+ watch:"An on-prem deployment whose events never leave the cluster recreates the silo you built it to avoid. Wire this in the same project, not a later one."},
+{n:"ServiceNow AI Control Tower",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["disc","run","agent","supply"],
+ plain:"The path from a technical finding to a tracked, owned risk item.",
+ how:["Maps AI Defense findings to relevant standards within ServiceNow's integrated risk management.","Supports risk quantification and policy automation."],
+ needs:["ServiceNow with the relevant module."],
+ dep:"Any workflow where AI governance sits with a risk function rather than with security operations.",
+ watch:"Relevant mainly where a formal risk register exists. If governance is informal, this adds process without adding control."},
+{n:"Standards mapping",cat:"Operations",hue:"var(--l-ops)",tag:"ops",m:["val","run","agent","supply"],
+ plain:"What turns a test result into an audit artefact.",
+ how:["Findings and protections map to MITRE ATLAS, OWASP Top 10 for LLMs and NIST AI-RMF.","Mapping extends across model, agent and MCP workflows, including supply chain categories for model files, datasets, tools and MCP servers.","Also maps to Cisco's Integrated AI Security and Safety Framework, added in the February 2026 expansion.","Cisco states its research team contributes to these standards and participates in industry working groups."],
+ needs:["Nothing beyond the relevant capability."],
+ dep:"Every workflow that produces evidence. Not applicable to raw discovery.",
+ watch:"For regulated buyers this is often the deciding capability rather than a nice-to-have. Reports arriving pre-mapped is the difference between an engineering ticket and an audit submission."}
+];
+
+var picker=document.getElementById("picker");
+MODES.forEach(function(m){
+  var b=document.createElement("button");
+  b.className="mode";b.style.setProperty("--hue",m.hue);
+  b.setAttribute("aria-pressed","false");b.dataset.mode=m.id;
+  b.innerHTML='<span class="mode-name">'+m.name+'</span><span class="mode-for">'+m.forWho+'</span>'+
+    '<span class="mode-facts">'+m.facts.map(function(f){return '<span class="fact">'+f+'</span>';}).join("")+'</span>'+
+    '<span class="mode-owner">'+m.owner+'</span>';
+  b.addEventListener("click",function(){setMode(m.id);});
+  picker.appendChild(b);
+});
+
+var openNodes={};
+var LABEL={required:"Required",recommended:"Recommended",optional:"Optional",na:"Not used"};
+
+function renderMap(mode){
+  var map=document.getElementById("map");map.innerHTML="";
+  BRANCHES.forEach(function(br){
+    var c={required:0,recommended:0,optional:0,na:0};
+    br.items.forEach(function(it){c[it.s[mode]]++;});
+    var parts=[];
+    if(c.required)parts.push(c.required+" required");
+    if(c.recommended)parts.push(c.recommended+" recommended");
+    if(c.optional)parts.push(c.optional+" optional");
+    if(c.na)parts.push(c.na+" not used");
+    var node=document.createElement("div");
+    node.className="node"+(openNodes[br.id]?" open":"");
+    node.style.setProperty("--hue",br.hue);
+    var head=document.createElement("button");
+    head.className="node-head";
+    head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    head.innerHTML='<span class="node-top"><span class="node-name">'+br.title+'</span><span class="chev">▼</span></span>'+
+      '<span class="node-count">'+parts.join(" · ")+'</span>';
+    head.addEventListener("click",function(){
+      openNodes[br.id]=!openNodes[br.id];
+      node.classList.toggle("open",openNodes[br.id]);
+      head.setAttribute("aria-expanded",openNodes[br.id]?"true":"false");
+    });
+    var body=document.createElement("div");body.className="node-body";
+    br.items.forEach(function(it){
+      var st=it.s[mode];var d=document.createElement("div");
+      d.className="item"+(st==="na"?" na":"");
+      d.innerHTML='<div class="item-top"><span class="badge b-'+st+'">'+LABEL[st]+'</span><b>'+it.n+'</b></div><p>'+it.p+'</p>'+
+        (st==="na"?"":'<div class="why">'+it.w+'</div>');
+      body.appendChild(d);
+    });
+    node.appendChild(head);node.appendChild(body);map.appendChild(node);
+  });
+}
+
+function renderLLD(mode){
+  var m=MODES.filter(function(x){return x.id===mode;})[0];
+  document.getElementById("lldTitle").textContent="Build sequence — "+m.name;
+  document.getElementById("lldSub").textContent=m.sub;
+  var host=document.getElementById("lld");host.innerHTML="";
+  var n=0;
+  LLD[mode].forEach(function(ph){
+    var h=document.createElement("div");h.className="phase";h.style.setProperty("--hue",ph.hue);
+    h.innerHTML='<span class="phase-n">'+ph.p+'</span><span class="phase-t">'+ph.t+'</span><span class="phase-line"></span>';
+    host.appendChild(h);
+    ph.steps.forEach(function(s){
+      n++;
+      var el=document.createElement("div");
+      el.className="lstep";el.dataset.n=n;el.style.setProperty("--hue",ph.hue);
+      var body='<div class="blk"><h5>Where it sits</h5><p>'+s.where+'</p></div>'+
+        '<div class="blk"><h5>Needs to be in place first</h5><ul>'+s.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul></div>'+
+        '<div class="blk"><h5>Do this</h5><ol>'+s.actions.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ol></div>'+
+        (s.kv?'<div class="blk"><h5>Values to have ready</h5><div class="kv">'+s.kv.map(function(p){return '<div><dt>'+p[0]+'</dt><dd>'+p[1]+'</dd></div>';}).join("")+'</div></div>':"")+
+        '<div class="blk"><h5>Confirm it worked</h5><div class="check">'+s.verify+'</div></div>'+
+        '<div class="blk"><h5>Blocked until this is done</h5><div class="gate">'+s.gates+'</div></div>'+
+        (s.warn?'<div class="warn"><b>Watch out — </b>'+s.warn+'</div>':"");
+      el.innerHTML='<button class="step-head" aria-expanded="false">'+
+        '<span class="step-title"><span class="step-t">'+s.t+'</span><span class="chev">▼</span></span>'+
+        '<span class="step-meta">'+s.meta+'</span></button>'+
+        '<div class="step-body">'+body+'</div>';
+      var hd=el.querySelector(".step-head");
+      hd.addEventListener("click",function(){
+        var o=el.classList.toggle("open");
+        hd.setAttribute("aria-expanded",String(o));
+      });
+      host.appendChild(el);
+    });
+  });
+  document.getElementById("expandAll").textContent="Expand all";
+}
+
+function setMode(id){
+  var m=MODES.filter(function(x){return x.id===id;})[0];
+  Array.prototype.forEach.call(picker.children,function(b){
+    b.setAttribute("aria-pressed",String(b.dataset.mode===id));
+  });
+  var hub=document.getElementById("hub");
+  hub.style.setProperty("--hue",m.hue);
+  hub.innerHTML="<b>"+m.hub+"</b><span>"+m.forWho+"</span>";
+  renderMap(id);renderLLD(id);
+}
+
+document.getElementById("expandAll").addEventListener("click",function(){
+  var steps=Array.prototype.slice.call(document.querySelectorAll("#lld .lstep"));
+  var anyClosed=steps.some(function(s){return !s.classList.contains("open");});
+  steps.forEach(function(s){
+    s.classList.toggle("open",anyClosed);
+    s.querySelector(".step-head").setAttribute("aria-expanded",String(anyClosed));
+  });
+  this.textContent=anyClosed?"Collapse all":"Expand all";
+});
+
+var subs=Array.prototype.slice.call(document.querySelectorAll(".subtabs button"));
+var subViews={map:document.getElementById("sub-map"),lld:document.getElementById("sub-lld")};
+subs.forEach(function(t){
+  t.addEventListener("click",function(){
+    subs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(subViews).forEach(function(k){subViews[k].classList.toggle("hidden",k!==t.dataset.sub);});
+  });
+});
+
+var CATS=[{id:"all",n:"All"},{id:"disc",n:"Discovery"},{id:"val",n:"Validation"},
+  {id:"policy",n:"Policy"},{id:"run",n:"Runtime"},{id:"supply",n:"Supply chain"},
+  {id:"deploy",n:"Deployment"},{id:"ops",n:"Operations"}];
+var filters=document.getElementById("filters");
+CATS.forEach(function(c){
+  var b=document.createElement("button");
+  b.textContent=c.n;b.dataset.cat=c.id;
+  b.setAttribute("aria-pressed",String(c.id==="all"));
+  b.addEventListener("click",function(){
+    Array.prototype.forEach.call(filters.children,function(x){x.setAttribute("aria-pressed",String(x===b));});
+    Array.prototype.forEach.call(document.getElementById("compList").children,function(el){
+      el.classList.toggle("hidden",c.id!=="all"&&el.dataset.tag!==c.id);
+    });
+  });
+  filters.appendChild(b);
+});
+
+var DEPS=[{k:"disc",l:"Discover",c:"disc"},{k:"val",l:"Validate",c:"val"},{k:"run",l:"Runtime",c:"run"},
+  {k:"agent",l:"Agents",c:"agent"},{k:"supply",l:"Supply",c:"supply"},{k:"prem",l:"On-prem",c:"prem"}];
+var list=document.getElementById("compList");
+COMPONENTS.forEach(function(c){
+  var el=document.createElement("div");
+  el.className="comp";el.style.setProperty("--hue",c.hue);el.dataset.tag=c.tag;
+  var chips=DEPS.map(function(d){
+    var on=c.m.indexOf(d.k)!==-1;
+    return '<i class="'+(on?d.c:"off")+'">'+d.l+'</i>';
+  }).join("");
+  var allSix=c.m.length===6;
+  var body='<h4>Where it applies</h4><p class="depnote">'+(allSix?"Used in every workflow. ":"")+c.dep+'</p>'+
+    '<h4>How it works</h4><ul>'+c.how.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<h4>What it needs</h4><ul>'+c.needs.map(function(x){return "<li>"+x+"</li>";}).join("")+'</ul>'+
+    '<div class="warn"><b>Watch out — </b>'+c.watch+'</div>';
+  el.innerHTML='<button class="comp-head" aria-expanded="false">'+
+    '<span class="comp-title"><span class="comp-name">'+c.n+'</span><span class="chev">▼</span></span>'+
+    '<span class="cat">'+c.cat+'</span><p class="comp-plain">'+c.plain+'</p>'+
+    '<span class="dep"><em>Used in</em>'+chips+'</span></button>'+
+    '<div class="comp-body">'+body+'</div>';
+  var h=el.querySelector(".comp-head");
+  h.addEventListener("click",function(){
+    var o=el.classList.toggle("open");h.setAttribute("aria-expanded",String(o));
+  });
+  list.appendChild(el);
+});
+
+var tabs=Array.prototype.slice.call(document.querySelectorAll(".tabs button"));
+var views={deploy:document.getElementById("view-deploy"),comp:document.getElementById("view-comp"),ref:document.getElementById("view-ref")};
+tabs.forEach(function(t){
+  t.addEventListener("click",function(){
+    tabs.forEach(function(x){x.setAttribute("aria-selected",String(x===t));});
+    Object.keys(views).forEach(function(k){views[k].classList.toggle("hidden",k!==t.dataset.view);});
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+});
+
+setMode("disc");
+})();
+</script>
+</body>
+</html>
